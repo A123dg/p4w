@@ -24,15 +24,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy(CorsPolicyName, policy =>
     {
         policy
-            .SetIsOriginAllowed(origin =>
-            {
-                if (!Uri.TryCreate(origin, UriKind.Absolute, out var uri))
-                {
-                    return false;
-                }
-
-                return uri.IsLoopback;
-            })
+            .AllowAnyOrigin()
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -84,7 +76,6 @@ app.UseSwaggerUI();
 
 app.UseExceptionHandler();
 app.UseCors(CorsPolicyName);
-app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
