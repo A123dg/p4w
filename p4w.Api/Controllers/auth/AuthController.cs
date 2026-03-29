@@ -230,17 +230,11 @@ public class AuthController : ControllerBase
         };
     }
 
-    private string BuildGoogleCallbackUri(string? redirectUri)
-    {
-        var callbackBaseUrl = ResolveGoogleCallbackBaseUrl();
-        var callbackUri = $"{callbackBaseUrl}/api/Auth/google-callback";
-        return QueryHelpers.AddQueryString(
-            callbackUri,
-            new Dictionary<string, string?>
-            {
-                ["redirectUri"] = redirectUri
-            });
-    }
+private string BuildGoogleCallbackUri(string? redirectUri)
+{
+    var callbackBaseUrl = ResolveGoogleCallbackBaseUrl();
+    return $"{callbackBaseUrl}/api/Auth/google-callback";
+}
 
     private string ResolveGoogleCallbackBaseUrl()
     {
