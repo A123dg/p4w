@@ -236,23 +236,23 @@ private string BuildGoogleCallbackUri(string? redirectUri)
     return $"{callbackBaseUrl}/api/Auth/google-callback";
 }
 
-    private string ResolveGoogleCallbackBaseUrl()
+   private string ResolveGoogleCallbackBaseUrl()
+{
+    var configuredBaseUrl = _configuration["Authentication:Google:CallbackBaseUrl"]
+        ?? Environment.GetEnvironmentVariable("Authentication__Google__CallbackBaseUrl");
+
+    if (!string.IsNullOrWhiteSpace(configuredBaseUrl))
     {
-        var configuredBaseUrl = _configuration["Authentication:Google:CallbackBaseUrl"]
-            ?? Environment.GetEnvironmentVariable("Authentication__Google__CallbackBaseUrl");
-
-        if (!string.IsNullOrWhiteSpace(configuredBaseUrl))
-        {
-            return configuredBaseUrl.TrimEnd('/');
-        }
-
-        if (!Request.Host.HasValue)
-        {
-            throw new InvalidOperationException("Cannot build Google callback URL.");
-        }
-
-        return $"{Request.Scheme}://{Request.Host}{Request.PathBase}".TrimEnd('/');
+        return configuredBaseUrl.TrimEnd('/');
     }
+
+    if (!Request.Host.HasValue)
+    {
+        throw new InvalidOperationException("Cannot build Google callback URL.");
+    }
+
+    return $"https://{Request.Host}{Request.PathBase}".TrimEnd('/');
+}
 
     private string? ResolveGoogleRedirectUri(string? redirectUri)
     {
