@@ -9,6 +9,8 @@ using System.Text;
 LoadDotEnv(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
 
 var builder = WebApplication.CreateBuilder(args);
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 const string CorsPolicyName = "FrontendCors";
 
 builder.Services.AddControllers();
@@ -77,11 +79,8 @@ builder.Services.AddAuthorization(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseExceptionHandler();
 app.UseCors(CorsPolicyName);
