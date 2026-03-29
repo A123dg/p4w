@@ -1,0 +1,7 @@
+
+@p4w.Api_HostAddress = http://localhost:5059
+
+GET {{p4w.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

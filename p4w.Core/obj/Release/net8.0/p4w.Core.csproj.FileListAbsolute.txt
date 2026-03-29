@@ -1,0 +1,12 @@
+C:\Users\HP\source\repos\p4w\PeakSeek02\p4w\p4w.Core\bin\Release\net8.0\p4w.Core.deps.json
+C:\Users\HP\source\repos\p4w\PeakSeek02\p4w\p4w.Core\bin\Release\net8.0\p4w.Core.dll
+C:\Users\HP\source\repos\p4w\PeakSeek02\p4w\p4w.Core\bin\Release\net8.0\p4w.Core.pdb
+C:\Users\HP\source\repos\p4w\PeakSeek02\p4w\p4w.Core\obj\Release\net8.0\p4w.Core.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\HP\source\repos\p4w\PeakSeek02\p4w\p4w.Core\obj\Release\net8.0\p4w.Core.AssemblyInfoInputs.cache
+C:\Users\HP\source\repos\p4w\PeakSeek02\p4w\p4w.Core\obj\Release\net8.0\p4w.Core.AssemblyInfo.cs
+C:\Users\HP\source\repos\p4w\PeakSeek02\p4w\p4w.Core\obj\Release\net8.0\p4w.Core.csproj.CoreCompileInputs.cache
+C:\Users\HP\source\repos\p4w\PeakSeek02\p4w\p4w.Core\obj\Release\net8.0\p4w.Core.sourcelink.json
+C:\Users\HP\source\repos\p4w\PeakSeek02\p4w\p4w.Core\obj\Release\net8.0\p4w.Core.dll
+C:\Users\HP\source\repos\p4w\PeakSeek02\p4w\p4w.Core\obj\Release\net8.0\refint\p4w.Core.dll
+C:\Users\HP\source\repos\p4w\PeakSeek02\p4w\p4w.Core\obj\Release\net8.0\p4w.Core.pdb
+C:\Users\HP\source\repos\p4w\PeakSeek02\p4w\p4w.Core\obj\Release\net8.0\ref\p4w.Core.dll
