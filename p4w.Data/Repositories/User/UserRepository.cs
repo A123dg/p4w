@@ -46,7 +46,13 @@ public class UserRepository : IUserRepository {
         return user;
     }
     public async Task UpdateAsync(User user) {
-        _context.Users.Update(user);
+        var entry = _context.Entry(user);
+        if (entry.State == EntityState.Detached)
+        {
+            _context.Users.Attach(user);
+            entry.State = EntityState.Modified;
+        }
+
         await _context.SaveChangesAsync();
     }
     public async Task<User> GetUserByEmailAsync(string email) {
