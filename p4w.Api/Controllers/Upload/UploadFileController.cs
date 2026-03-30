@@ -16,27 +16,24 @@ namespace p4w.Api.Controllers
         }
 
         [HttpPost("image")]
-        public async Task<ApiResponse<IActionResult>> UploadImage(IFormFile file)
+        public async Task<ApiResponse<string>> UploadImage(IFormFile file)
         {
             if (file == null || file.Length == 0)
-                return
-                new ApiResponse<IActionResult>
+                return new ApiResponse<string>
                 {
-
                     Code = 400,
                     Success = false,
                     Message = "No file provided",
-                    Data = BadRequest("No file provided")
-                }; 
-              
+                    Data = null
+                };
 
-            var url = await _cloudinaryService.UploadImageAsync(file);
-            return new ApiResponse<IActionResult>
+            var media = await _cloudinaryService.UploadImageAsync(file);
+            return new ApiResponse<string>
             {
                 Code = 200,
                 Success = true,
                 Message = "File uploaded successfully",
-                Data = url != null ? Ok(new { Url = url }) : null
+                Data = media.Url
             };
 
         // [HttpDelete("{publicId}")]

@@ -185,6 +185,42 @@ public class AuthService : IAuthService
             user.Password = PasswordHelper.HashPassword(request.Password);
         }
 
+        if (!string.IsNullOrWhiteSpace(request.MediaLinkUrl))
+        {
+            var avatarLink = user.MediaLinks
+                .FirstOrDefault(m => m.EntityType == "avatar");
+
+            if (avatarLink != null)
+            {
+                avatarLink.Media.Url = request.MediaLinkUrl.Trim();
+                await _mediaRepository.UpdateAsync(avatarLink.Media);
+            }
+            else
+            {
+                var media = new Media
+                {
+                    Id = Guid.NewGuid(),
+                    Url = request.MediaLinkUrl.Trim(),
+                    MimeType = "image/jpeg",
+                    Size = 0,
+                    Status = UserStatuses.Active,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                user.MediaLinks.Add(new MediaLink
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = user.Id,
+                    EntityType = "avatar",
+                    EntityId = user.Id,
+                    MediaType = "image",
+                    SortOrder = 0,
+                    MediaId = media.Id,
+                    Media = media
+                });
+            }
+        }
+
         await _userRepository.UpdateAsync(user);
 
         user = await _userRepository.GetUserByIdAsync(userId);
