@@ -53,6 +53,24 @@ public class UserRepository : IUserRepository {
             entry.State = EntityState.Modified;
         }
 
+        foreach (var mediaLink in user.MediaLinks)
+        {
+            var mediaLinkEntry = _context.Entry(mediaLink);
+            if (mediaLinkEntry.State == EntityState.Detached)
+            {
+                _context.MediaLinks.Add(mediaLink);
+            }
+
+            if (mediaLink.Media != null)
+            {
+                var mediaEntry = _context.Entry(mediaLink.Media);
+                if (mediaEntry.State == EntityState.Detached)
+                {
+                    _context.Media.Add(mediaLink.Media);
+                }
+            }
+        }
+
         await _context.SaveChangesAsync();
     }
     public async Task<User> GetUserByEmailAsync(string email) {
