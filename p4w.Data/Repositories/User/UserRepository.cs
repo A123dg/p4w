@@ -56,17 +56,35 @@ public class UserRepository : IUserRepository {
         foreach (var mediaLink in user.MediaLinks)
         {
             var mediaLinkEntry = _context.Entry(mediaLink);
-            if (mediaLinkEntry.State == EntityState.Detached)
+            var mediaLinkExists = await _context.MediaLinks
+                .AsNoTracking()
+                .AnyAsync(x => x.Id == mediaLink.Id);
+
+            if (!mediaLinkExists)
             {
-                _context.MediaLinks.Add(mediaLink);
+                if (mediaLinkEntry.State == EntityState.Detached)
+                {
+                    _context.MediaLinks.Attach(mediaLink);
+                }
+
+                mediaLinkEntry.State = EntityState.Added;
             }
 
             if (mediaLink.Media != null)
             {
                 var mediaEntry = _context.Entry(mediaLink.Media);
-                if (mediaEntry.State == EntityState.Detached)
+                var mediaExists = await _context.Media
+                    .AsNoTracking()
+                    .AnyAsync(x => x.Id == mediaLink.Media.Id);
+
+                if (!mediaExists)
                 {
-                    _context.Media.Add(mediaLink.Media);
+                    if (mediaEntry.State == EntityState.Detached)
+                    {
+                        _context.Media.Attach(mediaLink.Media);
+                    }
+
+                    mediaEntry.State = EntityState.Added;
                 }
             }
         }
