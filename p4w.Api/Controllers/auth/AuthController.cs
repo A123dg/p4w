@@ -8,6 +8,7 @@ using p4w.Core.Interfaces.Repositories.Auth;
 using p4w.Core.Interfaces.Services.Auth;
 using p4w.Core.Paginations;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -57,7 +58,8 @@ public class AuthController : ControllerBase
             ?? throw new InvalidOperationException("Google ClientId is missing.");
 
         var effectiveRedirectUri = ResolveGoogleRedirectUri(redirectUri);
-        var callbackUri = BuildGoogleCallbackUri(effectiveRedirectUri);
+        var callbackUri = BuildGoogleCallbackUri();
+        var state = BuildGoogleState(effectiveRedirectUri);
         var authUrl = QueryHelpers.AddQueryString(
             "https://accounts.google.com/o/oauth2/v2/auth",
             new Dictionary<string, string?>
@@ -67,16 +69,17 @@ public class AuthController : ControllerBase
                 ["response_type"] = "code",
                 ["scope"] = "openid email profile",
                 ["access_type"] = "offline",
-                ["prompt"] = "select_account"
+                ["prompt"] = "select_account",
+                ["state"] = state
             });
 
         return Redirect(authUrl);
     }
 
     [HttpGet("google-callback")]
-    public async Task<IActionResult> GoogleCallbackAsync([FromQuery] string? code, [FromQuery] string? error = null, [FromQuery] string? redirectUri = null)
+    public async Task<IActionResult> GoogleCallbackAsync([FromQuery] string? code, [FromQuery] string? error = null, [FromQuery] string? redirectUri = null, [FromQuery] string? state = null)
     {
-        var effectiveRedirectUri = ResolveGoogleRedirectUri(redirectUri);
+        var effectiveRedirectUri = ResolveGoogleRedirectUri(redirectUri, state);
 
         if (!string.IsNullOrWhiteSpace(error))
         {
@@ -96,7 +99,7 @@ public class AuthController : ControllerBase
             ?? Environment.GetEnvironmentVariable("Authentication__Google__ClientSecret")
             ?? throw new InvalidOperationException("Google ClientSecret is missing.");
 
-        var callbackUri = BuildGoogleCallbackUri(effectiveRedirectUri);
+        var callbackUri = BuildGoogleCallbackUri();
         var httpClient = _httpClientFactory.CreateClient();
 
         using var tokenRequest = new HttpRequestMessage(HttpMethod.Post, "https://oauth2.googleapis.com/token")
@@ -231,7 +234,7 @@ public class AuthController : ControllerBase
         };
     }
 
-private string BuildGoogleCallbackUri(string? redirectUri)
+private string BuildGoogleCallbackUri()
 {
     var callbackBaseUrl = ResolveGoogleCallbackBaseUrl();
     return $"{callbackBaseUrl}/api/Auth/google-callback";
@@ -255,15 +258,59 @@ private string BuildGoogleCallbackUri(string? redirectUri)
     return $"https://{Request.Host}{Request.PathBase}".TrimEnd('/');
 }
 
-    private string? ResolveGoogleRedirectUri(string? redirectUri)
+    private string? ResolveGoogleRedirectUri(string? redirectUri, string? state = null)
     {
         if (!string.IsNullOrWhiteSpace(redirectUri))
         {
             return redirectUri;
         }
 
+        var redirectUriFromState = ReadRedirectUriFromState(state);
+        if (!string.IsNullOrWhiteSpace(redirectUriFromState))
+        {
+            return redirectUriFromState;
+        }
+
         return _configuration["Authentication:Google:RedirectUri"]
             ?? Environment.GetEnvironmentVariable("Authentication__Google__RedirectUri");
+    }
+
+    private static string? BuildGoogleState(string? redirectUri)
+    {
+        if (string.IsNullOrWhiteSpace(redirectUri))
+        {
+            return null;
+        }
+
+        var json = JsonSerializer.Serialize(new GoogleAuthState
+        {
+            RedirectUri = redirectUri
+        });
+
+        return WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(json));
+    }
+
+    private static string? ReadRedirectUriFromState(string? state)
+    {
+        if (string.IsNullOrWhiteSpace(state))
+        {
+            return null;
+        }
+
+        try
+        {
+            var json = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(state));
+            var payload = JsonSerializer.Deserialize<GoogleAuthState>(json, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            return payload?.RedirectUri;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     private IActionResult BuildGoogleRedirectResult(string? redirectUri, bool success, string message)
@@ -305,5 +352,10 @@ private string BuildGoogleCallbackUri(string? redirectUri)
 
         [JsonPropertyName("expires_in")]
         public int? ExpiresIn { get; set; }
+    }
+
+    private sealed class GoogleAuthState
+    {
+        public string? RedirectUri { get; set; }
     }
 }
