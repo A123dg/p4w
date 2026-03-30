@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "0ibw3bDaYao=",
+  "dgSpecHash": "2r6FNbvcDiw=",
   "success": true,
-  "projectFilePath": "C:\\Users\\HP\\source\\repos\\p4w\\PeakSeek02\\p4w\\p4w.Core\\p4w.Core.csproj",
+  "projectFilePath": "C:\\Users\\HP\\Desktop\\p4w\\p4w.Core\\p4w.Core.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\HP\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\8.0.8\\microsoft.aspnetcore.authentication.jwtbearer.8.0.8.nupkg.sha512",
     "C:\\Users\\HP\\.nuget\\packages\\microsoft.identitymodel.abstractions\\7.1.2\\microsoft.identitymodel.abstractions.7.1.2.nupkg.sha512",

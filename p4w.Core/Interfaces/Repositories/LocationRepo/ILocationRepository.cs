@@ -28,5 +28,6 @@ public interface ILocationRepository
     Task<AdminLocationDto?> GetAdminLocationDetailAsync(Guid locationId);
     Task<AdminReviewDto?> GetAdminReviewDetailAsync(Guid reviewId);
     Task AddLocationAsync(p4w.Core.Models.Location location);
+    Task AddLocationMediaAsync(Guid userId, Guid locationId, IEnumerable<string>? mediaLinkUrls);
     Task UpdateLocationAsync(p4w.Core.Models.Location location);
 }

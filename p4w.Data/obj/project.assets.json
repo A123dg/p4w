@@ -3811,11 +3811,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\HP\\source\\repos\\p4w\\PeakSeek02\\p4w\\p4w.Data\\p4w.Data.csproj",
+      "projectUniqueName": "C:\\Users\\HP\\Desktop\\p4w\\p4w.Data\\p4w.Data.csproj",
       "projectName": "p4w.Data",
-      "projectPath": "C:\\Users\\HP\\source\\repos\\p4w\\PeakSeek02\\p4w\\p4w.Data\\p4w.Data.csproj",
+      "projectPath": "C:\\Users\\HP\\Desktop\\p4w\\p4w.Data\\p4w.Data.csproj",
       "packagesPath": "C:\\Users\\HP\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\HP\\source\\repos\\p4w\\PeakSeek02\\p4w\\p4w.Data\\obj\\",
+      "outputPath": "C:\\Users\\HP\\Desktop\\p4w\\p4w.Data\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\HP\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -3833,8 +3833,8 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "C:\\Users\\HP\\source\\repos\\p4w\\PeakSeek02\\p4w\\p4w.Core\\p4w.Core.csproj": {
-              "projectPath": "C:\\Users\\HP\\source\\repos\\p4w\\PeakSeek02\\p4w\\p4w.Core\\p4w.Core.csproj"
+            "C:\\Users\\HP\\Desktop\\p4w\\p4w.Core\\p4w.Core.csproj": {
+              "projectPath": "C:\\Users\\HP\\Desktop\\p4w\\p4w.Core\\p4w.Core.csproj"
             }
           }
         }

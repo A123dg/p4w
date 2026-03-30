@@ -346,6 +346,11 @@ query = query.Where(x =>
                 Description = x.Description,
                 Address = x.Address,
                 AddressLink = x.AddressLink,
+                MediaLinkUrls = _context.MediaLinks
+                    .Where(m => m.EntityType == "location" && m.EntityId == x.Id)
+                    .OrderBy(m => m.SortOrder)
+                    .Select(m => m.Media.Url)
+                    .ToList(),
                 Type = x.Type,
                 OpeningHours = x.OpeningHours.HasValue ? x.OpeningHours.Value.ToString(@"hh\:mm\:ss") : null,
                 ClosingHours = x.ClosingHours.HasValue ? x.ClosingHours.Value.ToString(@"hh\:mm\:ss") : null,
@@ -461,6 +466,53 @@ query = query.Where(x =>
         await _context.SaveChangesAsync();
     }
 
+    public async Task AddLocationMediaAsync(Guid userId, Guid locationId, IEnumerable<string>? mediaLinkUrls)
+    {
+        if (mediaLinkUrls == null)
+        {
+            return;
+        }
+
+        var normalizedUrls = mediaLinkUrls
+            .Where(url => !string.IsNullOrWhiteSpace(url))
+            .Select(url => url.Trim())
+            .ToList();
+
+        if (normalizedUrls.Count == 0)
+        {
+            return;
+        }
+
+        var mediaLinks = normalizedUrls
+            .Select((url, index) =>
+            {
+                var mediaId = Guid.NewGuid();
+                return new MediaLink
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = userId,
+                    EntityType = "location",
+                    EntityId = locationId,
+                    MediaType = "image",
+                    SortOrder = index,
+                    MediaId = mediaId,
+                    Media = new Media
+                    {
+                        Id = mediaId,
+                        Url = url,
+                        MimeType = "image/jpeg",
+                        Size = 0,
+                        Status = UserStatuses.Active,
+                        CreatedAt = DateTime.UtcNow
+                    }
+                };
+            })
+            .ToList();
+
+        _context.MediaLinks.AddRange(mediaLinks);
+        await _context.SaveChangesAsync();
+    }
+
     public async Task UpdateLocationAsync(Core.Models.Location location)
     {
         _context.Locations.Update(location);
@@ -481,6 +533,11 @@ query = query.Where(x =>
                 Description = x.Description,
                 Address = x.Address,
                 AddressLink = x.AddressLink,
+                MediaLinkUrls = _context.MediaLinks
+                    .Where(m => m.EntityType == "location" && m.EntityId == x.Id)
+                    .OrderBy(m => m.SortOrder)
+                    .Select(m => m.Media.Url)
+                    .ToList(),
                 Type = x.Type,
                 OpeningHours = x.OpeningHours.HasValue ? x.OpeningHours.Value.ToString(@"hh\:mm\:ss") : null,
                 ClosingHours = x.ClosingHours.HasValue ? x.ClosingHours.Value.ToString(@"hh\:mm\:ss") : null,

@@ -79,6 +79,7 @@ public class LocationService : ILocationService
         };
 
         await _locationRepository.AddLocationAsync(location);
+        await _locationRepository.AddLocationMediaAsync(userId, location.Id, request.MediaLinkUrls);
         return await GetAdminLocationDetailAsync(location.Id);
     }
 
