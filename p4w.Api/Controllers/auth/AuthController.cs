@@ -9,6 +9,7 @@ using p4w.Core.Interfaces.Services.Auth;
 using p4w.Core.Paginations;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace p4w.Api.Controllers.Auth;
 
@@ -290,6 +291,19 @@ private string BuildGoogleCallbackUri(string? redirectUri)
 
     private sealed class GoogleTokenResponse
     {
+        [JsonPropertyName("id_token")]
         public string? IdToken { get; set; }
+
+        [JsonPropertyName("access_token")]
+        public string? AccessToken { get; set; }
+
+        [JsonPropertyName("refresh_token")]
+        public string? RefreshToken { get; set; }
+
+        [JsonPropertyName("token_type")]
+        public string? TokenType { get; set; }
+
+        [JsonPropertyName("expires_in")]
+        public int? ExpiresIn { get; set; }
     }
 }
