@@ -15,6 +15,7 @@ public interface IUserRepository {
     Task<User> GetUserByUserNameAsync(string userName);
     Task<User> GetUserByEmailAsync(string email);
     Task<RecentLocationDto?> GetRecentLocationByUserIdAsync(Guid userId);
+    Task<List<OwnedLocationDto>> GetOwnedLocationsByUserIdAsync(Guid userId);
     Task<PagedResult<UserResponseDto>> GetUsersAsync(string? search, Guid? roleId, int? status, int page, int pageSize);
     Task<bool> ExistsByEmailAsync(string email, Guid excludeUserId);
 }

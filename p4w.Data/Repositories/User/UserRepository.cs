@@ -190,6 +190,36 @@ public class UserRepository : IUserRepository {
         };
     }
 
+    public async Task<List<OwnedLocationDto>> GetOwnedLocationsByUserIdAsync(Guid userId)
+    {
+        return await _context.Locations
+            .Where(x => x.OwnerId == userId)
+            .OrderBy(x => x.LocationName)
+            .Select(x => new OwnedLocationDto
+            {
+                Id = x.Id,
+                LocationName = x.LocationName,
+                Address = x.Address,
+                AddressLink = x.AddressLink,
+                MediaLinkUrls = _context.MediaLinks
+                    .Where(m => m.EntityType == "location" && m.EntityId == x.Id)
+                    .OrderBy(m => m.SortOrder)
+                    .Select(m => m.Media.Url)
+                    .ToList(),
+                Status = x.Status,
+                StatusName = x.Status == LocationStatuses.Pending
+                    ? "pending"
+                    : x.Status == LocationStatuses.Approved
+                        ? "approved"
+                        : x.Status == LocationStatuses.Rejected
+                            ? "rejected"
+                            : x.Status == LocationStatuses.Active
+                                ? "active"
+                                : "inactive"
+            })
+            .ToListAsync();
+    }
+
     public async Task<PagedResult<UserResponseDto>> GetUsersAsync(string? search, Guid? roleId, int? status, int page, int pageSize)
     {
         page = page < 1 ? 1 : page;
@@ -249,6 +279,12 @@ query = query.Where(x =>
                         Id = l.Id,
                         LocationName = l.LocationName,
                         Address = l.Address,
+                        AddressLink = l.AddressLink,
+                        MediaLinkUrls = _context.MediaLinks
+                            .Where(m => m.EntityType == "location" && m.EntityId == l.Id)
+                            .OrderBy(m => m.SortOrder)
+                            .Select(m => m.Media.Url)
+                            .ToList(),
                         Status = l.Status,
                         StatusName = l.Status == LocationStatuses.Pending
                             ? "pending"

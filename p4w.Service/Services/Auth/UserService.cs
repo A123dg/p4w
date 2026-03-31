@@ -10,7 +10,7 @@ namespace p4w.Core.Interfaces.Services.Auth
 {
 
     
-    public class UserService : IUserService 
+public class UserService : IUserService 
     {
         private readonly IConfiguration _configuration;
     private readonly IUserRepository _userRepository;
@@ -40,6 +40,7 @@ namespace p4w.Core.Interfaces.Services.Auth
 {
     User user = await _userRepository.GetUserByIdAsync(userId);
     RecentLocationDto? recentLocation = await _userRepository.GetRecentLocationByUserIdAsync(userId);
+    var ownedLocations = await _userRepository.GetOwnedLocationsByUserIdAsync(userId);
 
     return new UserProfileDto
     {
@@ -59,25 +60,7 @@ namespace p4w.Core.Interfaces.Services.Auth
             .Select(m => m.Media.Url)
             .FirstOrDefault() ?? "",
         RecentLocation = recentLocation,
-        OwnedLocations = user.OwnedLocations
-            .OrderBy(x => x.LocationName)
-            .Select(x => new OwnedLocationDto
-            {
-                Id = x.Id,
-                LocationName = x.LocationName,
-                Address = x.Address,
-                Status = x.Status,
-                StatusName = x.Status == LocationStatuses.Pending
-                    ? "pending"
-                    : x.Status == LocationStatuses.Approved
-                        ? "approved"
-                        : x.Status == LocationStatuses.Rejected
-                            ? "rejected"
-                            : x.Status == LocationStatuses.Active
-                                ? "active"
-                                : "inactive"
-            })
-            .ToList()
+        OwnedLocations = ownedLocations
     };
 }
 
