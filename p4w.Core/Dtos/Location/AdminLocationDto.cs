@@ -15,4 +15,14 @@ public class AdminLocationDto
     public string? ClosingHours { get; set; }
     public int Status { get; set; }
     public string StatusName { get; set; } = null!;
+    public bool HasPendingUpdate { get; set; }
+    public string? PendingLocationName { get; set; }
+    public string? PendingDescription { get; set; }
+    public string? PendingAddress { get; set; }
+    public string? PendingAddressLink { get; set; }
+    public List<string> PendingMediaLinkUrls { get; set; } = [];
+    public int? PendingType { get; set; }
+    public string? PendingOpeningHours { get; set; }
+    public string? PendingClosingHours { get; set; }
+    public DateTime? PendingUpdatedAt { get; set; }
 }

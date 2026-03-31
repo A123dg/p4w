@@ -12,6 +12,7 @@ public interface ILocationService
     Task<PagedResult<ReviewDto>> GetLocationReviewsAsync(Guid locationId, int page, int pageSize);
     Task<PagedResult<CommentDto>> GetReviewCommentsAsync(Guid reviewId, int page, int pageSize);
     Task<AdminLocationDto> CreateLocationAsync(Guid userId, CreateLocationRequest request);
+    Task<AdminLocationDto> RequestLocationUpdateAsync(Guid userId, Guid locationId, UpdateLocationRequest request);
     Task<ReviewDto> CreateReviewAsync(Guid userId, CreateReviewRequest request);
     Task<CommentDto> CreateCommentAsync(Guid userId, CreateCommentRequest request);
     Task<PagedResult<AdminLocationDto>> GetAdminLocationsAsync(string? search, int? type, int? status, int page, int pageSize);

@@ -83,6 +83,57 @@ public class LocationService : ILocationService
         return await GetAdminLocationDetailAsync(location.Id);
     }
 
+    public async Task<AdminLocationDto> RequestLocationUpdateAsync(Guid userId, Guid locationId, UpdateLocationRequest request)
+    {
+        var openingHours = ParseOperatingHours(request.OpeningHours, nameof(request.OpeningHours));
+        var closingHours = ParseOperatingHours(request.ClosingHours, nameof(request.ClosingHours));
+
+        var entity = await _locationRepository.GetLocationEntityForAdminAsync(locationId);
+        if (entity == null)
+        {
+            throw new AppException("Location not found", ErrorCodes.NotFound, StatusCodes.Status404NotFound);
+        }
+
+        if (entity.OwnerId != userId)
+        {
+            throw new AppException("You do not have permission to update this location", ErrorCodes.Forbidden, StatusCodes.Status403Forbidden);
+        }
+
+        if (entity.Status == LocationStatuses.Inactive)
+        {
+            throw new AppException("Inactive location cannot be updated", ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
+        }
+
+        if (entity.Status == LocationStatuses.Pending)
+        {
+            entity.LocationName = request.LocationName.Trim();
+            entity.Description = request.Description?.Trim();
+            entity.Address = request.Address.Trim();
+            entity.AddressLink = string.IsNullOrWhiteSpace(request.AddressLink) ? null : request.AddressLink.Trim();
+            entity.OpeningHours = openingHours;
+            entity.ClosingHours = closingHours;
+            entity.Type = request.Type;
+
+            await _locationRepository.UpdateLocationAsync(entity);
+            await _locationRepository.ReplaceLocationMediaAsync(userId, entity.Id, request.MediaLinkUrls, "location");
+            return await GetAdminLocationDetailAsync(entity.Id);
+        }
+
+        entity.HasPendingUpdate = true;
+        entity.PendingLocationName = request.LocationName.Trim();
+        entity.PendingDescription = request.Description?.Trim();
+        entity.PendingAddress = request.Address.Trim();
+        entity.PendingAddressLink = string.IsNullOrWhiteSpace(request.AddressLink) ? null : request.AddressLink.Trim();
+        entity.PendingOpeningHours = openingHours;
+        entity.PendingClosingHours = closingHours;
+        entity.PendingType = request.Type;
+        entity.PendingUpdatedAt = DateTime.UtcNow;
+
+        await _locationRepository.UpdateLocationAsync(entity);
+        await _locationRepository.ReplaceLocationMediaAsync(userId, entity.Id, request.MediaLinkUrls, "location-pending");
+        return await GetAdminLocationDetailAsync(entity.Id);
+    }
+
     public async Task<ReviewDto> CreateReviewAsync(Guid userId, CreateReviewRequest request)
     {
         if (request.Rating < 1 || request.Rating > 5)
@@ -231,6 +282,50 @@ public class LocationService : ILocationService
             throw new AppException("Location not found", ErrorCodes.NotFound, StatusCodes.Status404NotFound);
         }
 
+        if (entity.HasPendingUpdate)
+        {
+            if (request.Status == LocationStatuses.Rejected)
+            {
+                ClearPendingUpdate(entity);
+                await _locationRepository.UpdateLocationAsync(entity);
+                await _locationRepository.ClearLocationMediaAsync(entity.Id, "location-pending");
+                return await GetAdminLocationDetailAsync(entity.Id);
+            }
+
+            if (request.Status is LocationStatuses.Active or LocationStatuses.Approved)
+            {
+                var adminChangedCoreFields = !MatchesCurrentLocation(entity, request);
+                if (adminChangedCoreFields)
+                {
+                    entity.LocationName = request.LocationName.Trim();
+                    entity.Description = request.Description?.Trim();
+                    entity.Address = request.Address.Trim();
+                    entity.AddressLink = string.IsNullOrWhiteSpace(request.AddressLink) ? null : request.AddressLink.Trim();
+                    entity.OpeningHours = openingHours;
+                    entity.ClosingHours = closingHours;
+                    entity.Type = request.Type;
+                }
+                else
+                {
+                    entity.LocationName = entity.PendingLocationName ?? entity.LocationName;
+                    entity.Description = entity.PendingDescription;
+                    entity.Address = entity.PendingAddress ?? entity.Address;
+                    entity.AddressLink = entity.PendingAddressLink;
+                    entity.OpeningHours = entity.PendingOpeningHours;
+                    entity.ClosingHours = entity.PendingClosingHours;
+                    entity.Type = entity.PendingType ?? entity.Type;
+                }
+
+                entity.OwnerId = request.OwnerId;
+                entity.Status = request.Status;
+
+                ClearPendingUpdate(entity);
+                await _locationRepository.UpdateLocationAsync(entity);
+                await _locationRepository.ApplyPendingLocationMediaAsync(entity.Id);
+                return await GetAdminLocationDetailAsync(entity.Id);
+            }
+        }
+
         entity.LocationName = request.LocationName.Trim();
         entity.OwnerId = request.OwnerId;
         entity.Description = request.Description?.Trim();
@@ -240,8 +335,10 @@ public class LocationService : ILocationService
         entity.ClosingHours = closingHours;
         entity.Type = request.Type;
         entity.Status = request.Status;
+        ClearPendingUpdate(entity);
 
         await _locationRepository.UpdateLocationAsync(entity);
+        await _locationRepository.ClearLocationMediaAsync(entity.Id, "location-pending");
         return await GetAdminLocationDetailAsync(entity.Id);
     }
 
@@ -318,5 +415,28 @@ public class LocationService : ILocationService
         }
 
         throw new AppException($"{fieldName} must be in hh:mm:ss format", ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
+    }
+
+    private static bool MatchesCurrentLocation(Core.Models.Location entity, AdminUpsertLocationRequest request)
+    {
+        var normalizedRequestAddressLink = string.IsNullOrWhiteSpace(request.AddressLink) ? null : request.AddressLink.Trim();
+        return entity.LocationName == request.LocationName.Trim()
+            && entity.Description == request.Description?.Trim()
+            && entity.Address == request.Address.Trim()
+            && entity.AddressLink == normalizedRequestAddressLink
+            && entity.Type == request.Type;
+    }
+
+    private static void ClearPendingUpdate(Core.Models.Location entity)
+    {
+        entity.HasPendingUpdate = false;
+        entity.PendingLocationName = null;
+        entity.PendingDescription = null;
+        entity.PendingAddress = null;
+        entity.PendingAddressLink = null;
+        entity.PendingOpeningHours = null;
+        entity.PendingClosingHours = null;
+        entity.PendingType = null;
+        entity.PendingUpdatedAt = null;
     }
 }

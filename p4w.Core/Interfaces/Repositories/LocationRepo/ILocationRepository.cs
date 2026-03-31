@@ -29,5 +29,8 @@ public interface ILocationRepository
     Task<AdminReviewDto?> GetAdminReviewDetailAsync(Guid reviewId);
     Task AddLocationAsync(p4w.Core.Models.Location location);
     Task AddLocationMediaAsync(Guid userId, Guid locationId, IEnumerable<string>? mediaLinkUrls);
+    Task ReplaceLocationMediaAsync(Guid userId, Guid locationId, IEnumerable<string>? mediaLinkUrls, string entityType);
+    Task ApplyPendingLocationMediaAsync(Guid locationId);
+    Task ClearLocationMediaAsync(Guid locationId, string entityType);
     Task UpdateLocationAsync(p4w.Core.Models.Location location);
 }

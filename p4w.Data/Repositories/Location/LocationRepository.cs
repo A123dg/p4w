@@ -13,6 +13,8 @@ namespace p4w.Data.Repositories.Location;
 public class LocationRepository : ILocationRepository
 {
     private readonly AppDbContext _context;
+    private const string LocationMediaEntityType = "location";
+    private const string PendingLocationMediaEntityType = "location-pending";
 
     public LocationRepository(AppDbContext context)
     {
@@ -347,7 +349,7 @@ query = query.Where(x =>
                 Address = x.Address,
                 AddressLink = x.AddressLink,
                 MediaLinkUrls = _context.MediaLinks
-                    .Where(m => m.EntityType == "location" && m.EntityId == x.Id)
+                    .Where(m => m.EntityType == LocationMediaEntityType && m.EntityId == x.Id)
                     .OrderBy(m => m.SortOrder)
                     .Select(m => m.Media.Url)
                     .ToList(),
@@ -363,7 +365,21 @@ query = query.Where(x =>
                             ? "rejected"
                             : x.Status == LocationStatuses.Active
                                 ? "active"
-                                : "inactive"
+                                : "inactive",
+                HasPendingUpdate = x.HasPendingUpdate,
+                PendingLocationName = x.PendingLocationName,
+                PendingDescription = x.PendingDescription,
+                PendingAddress = x.PendingAddress,
+                PendingAddressLink = x.PendingAddressLink,
+                PendingMediaLinkUrls = _context.MediaLinks
+                    .Where(m => m.EntityType == PendingLocationMediaEntityType && m.EntityId == x.Id)
+                    .OrderBy(m => m.SortOrder)
+                    .Select(m => m.Media.Url)
+                    .ToList(),
+                PendingType = x.PendingType,
+                PendingOpeningHours = x.PendingOpeningHours.HasValue ? x.PendingOpeningHours.Value.ToString(@"hh\:mm\:ss") : null,
+                PendingClosingHours = x.PendingClosingHours.HasValue ? x.PendingClosingHours.Value.ToString(@"hh\:mm\:ss") : null,
+                PendingUpdatedAt = x.PendingUpdatedAt
             })
             .ToListAsync();
 
@@ -468,49 +484,7 @@ query = query.Where(x =>
 
     public async Task AddLocationMediaAsync(Guid userId, Guid locationId, IEnumerable<string>? mediaLinkUrls)
     {
-        if (mediaLinkUrls == null)
-        {
-            return;
-        }
-
-        var normalizedUrls = mediaLinkUrls
-            .Where(url => !string.IsNullOrWhiteSpace(url))
-            .Select(url => url.Trim())
-            .ToList();
-
-        if (normalizedUrls.Count == 0)
-        {
-            return;
-        }
-
-        var mediaLinks = normalizedUrls
-            .Select((url, index) =>
-            {
-                var mediaId = Guid.NewGuid();
-                return new MediaLink
-                {
-                    Id = Guid.NewGuid(),
-                    UserId = userId,
-                    EntityType = "location",
-                    EntityId = locationId,
-                    MediaType = "image",
-                    SortOrder = index,
-                    MediaId = mediaId,
-                    Media = new Media
-                    {
-                        Id = mediaId,
-                        Url = url,
-                        MimeType = "image/jpeg",
-                        Size = 0,
-                        Status = UserStatuses.Active,
-                        CreatedAt = DateTime.UtcNow
-                    }
-                };
-            })
-            .ToList();
-
-        _context.MediaLinks.AddRange(mediaLinks);
-        await _context.SaveChangesAsync();
+        await AddLocationMediaInternalAsync(userId, locationId, mediaLinkUrls, LocationMediaEntityType);
     }
 
     public async Task UpdateLocationAsync(Core.Models.Location location)
@@ -534,7 +508,7 @@ query = query.Where(x =>
                 Address = x.Address,
                 AddressLink = x.AddressLink,
                 MediaLinkUrls = _context.MediaLinks
-                    .Where(m => m.EntityType == "location" && m.EntityId == x.Id)
+                    .Where(m => m.EntityType == LocationMediaEntityType && m.EntityId == x.Id)
                     .OrderBy(m => m.SortOrder)
                     .Select(m => m.Media.Url)
                     .ToList(),
@@ -550,9 +524,55 @@ query = query.Where(x =>
                             ? "rejected"
                             : x.Status == LocationStatuses.Active
                                 ? "active"
-                                : "inactive"
+                                : "inactive",
+                HasPendingUpdate = x.HasPendingUpdate,
+                PendingLocationName = x.PendingLocationName,
+                PendingDescription = x.PendingDescription,
+                PendingAddress = x.PendingAddress,
+                PendingAddressLink = x.PendingAddressLink,
+                PendingMediaLinkUrls = _context.MediaLinks
+                    .Where(m => m.EntityType == PendingLocationMediaEntityType && m.EntityId == x.Id)
+                    .OrderBy(m => m.SortOrder)
+                    .Select(m => m.Media.Url)
+                    .ToList(),
+                PendingType = x.PendingType,
+                PendingOpeningHours = x.PendingOpeningHours.HasValue ? x.PendingOpeningHours.Value.ToString(@"hh\:mm\:ss") : null,
+                PendingClosingHours = x.PendingClosingHours.HasValue ? x.PendingClosingHours.Value.ToString(@"hh\:mm\:ss") : null,
+                PendingUpdatedAt = x.PendingUpdatedAt
             })
             .FirstOrDefaultAsync();
+    }
+
+    public async Task ReplaceLocationMediaAsync(Guid userId, Guid locationId, IEnumerable<string>? mediaLinkUrls, string entityType)
+    {
+        await ClearLocationMediaAsync(locationId, entityType);
+        await AddLocationMediaInternalAsync(userId, locationId, mediaLinkUrls, entityType);
+    }
+
+    public async Task ApplyPendingLocationMediaAsync(Guid locationId)
+    {
+        var activeMediaLinks = await _context.MediaLinks
+            .Include(x => x.Media)
+            .Where(x => x.EntityType == LocationMediaEntityType && x.EntityId == locationId)
+            .ToListAsync();
+
+        if (activeMediaLinks.Count > 0)
+        {
+            _context.MediaLinks.RemoveRange(activeMediaLinks);
+            _context.Media.RemoveRange(activeMediaLinks.Select(x => x.Media));
+        }
+
+        var pendingMediaLinks = await _context.MediaLinks
+            .Where(x => x.EntityType == PendingLocationMediaEntityType && x.EntityId == locationId)
+            .OrderBy(x => x.SortOrder)
+            .ToListAsync();
+
+        foreach (var pendingMediaLink in pendingMediaLinks)
+        {
+            pendingMediaLink.EntityType = LocationMediaEntityType;
+        }
+
+        await _context.SaveChangesAsync();
     }
 
     private static void PopulateCommentChildren(CommentDto parent, IReadOnlyDictionary<Guid, List<CommentDto>> commentLookup)
@@ -567,5 +587,69 @@ query = query.Where(x =>
         {
             PopulateCommentChildren(child, commentLookup);
         }
+    }
+
+    public async Task ClearLocationMediaAsync(Guid locationId, string entityType)
+    {
+        var existingMediaLinks = await _context.MediaLinks
+            .Include(x => x.Media)
+            .Where(x => x.EntityType == entityType && x.EntityId == locationId)
+            .ToListAsync();
+
+        if (existingMediaLinks.Count == 0)
+        {
+            return;
+        }
+
+        _context.MediaLinks.RemoveRange(existingMediaLinks);
+        _context.Media.RemoveRange(existingMediaLinks.Select(x => x.Media));
+        await _context.SaveChangesAsync();
+    }
+
+    private async Task AddLocationMediaInternalAsync(Guid userId, Guid locationId, IEnumerable<string>? mediaLinkUrls, string entityType)
+    {
+        if (mediaLinkUrls == null)
+        {
+            return;
+        }
+
+        var normalizedUrls = mediaLinkUrls
+            .Where(url => !string.IsNullOrWhiteSpace(url))
+            .Select(url => url.Trim())
+            .ToList();
+
+        if (normalizedUrls.Count == 0)
+        {
+            return;
+        }
+
+        var mediaLinks = normalizedUrls
+            .Select((url, index) =>
+            {
+                var mediaId = Guid.NewGuid();
+                return new MediaLink
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = userId,
+                    EntityType = entityType,
+                    EntityId = locationId,
+                    MediaType = "image",
+                    SortOrder = index,
+                    MediaId = mediaId,
+                    Media = new Media
+                    {
+                        Id = mediaId,
+                        Url = url,
+                        MimeType = "image/jpeg",
+                        Size = 0,
+                        Status = UserStatuses.Active,
+                        CreatedAt = DateTime.UtcNow
+                    }
+                };
+            })
+            .ToList();
+
+        _context.MediaLinks.AddRange(mediaLinks);
+        await _context.SaveChangesAsync();
     }
 }

@@ -45,6 +45,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
             entity.HasKey(e => e.Id);
             entity.Property(e => e.LocationName).HasMaxLength(255);
             entity.Property(e => e.Address).HasMaxLength(500);
+            entity.Property(e => e.PendingLocationName).HasMaxLength(255);
+            entity.Property(e => e.PendingAddress).HasMaxLength(500);
 
             entity.HasOne(d => d.Owner)
                 .WithMany(p => p.OwnedLocations)

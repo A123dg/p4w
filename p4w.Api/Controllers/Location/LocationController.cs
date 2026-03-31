@@ -79,6 +79,22 @@ public class LocationController : ControllerBase
     }
 
     [Authorize]
+    [HttpPut("{locationId:guid}")]
+    public async Task<ActionResult<ApiResponse<AdminLocationDto>>> UpdateLocation(Guid locationId, [FromBody] UpdateLocationRequest request)
+    {
+        var userId = GetCurrentUserId();
+        var location = await _locationService.RequestLocationUpdateAsync(userId, locationId, request);
+
+        return Ok(new ApiResponse<AdminLocationDto>
+        {
+            Code = 200,
+            Success = true,
+            Message = "Location update submitted and waiting for admin approval",
+            Data = location
+        });
+    }
+
+    [Authorize]
     [HttpPost("reviews")]
     public async Task<ActionResult<ApiResponse<ReviewDto>>> CreateReview([FromBody] CreateReviewRequest request)
     {
