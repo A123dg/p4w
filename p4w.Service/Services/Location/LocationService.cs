@@ -240,6 +240,26 @@ public class LocationService : ILocationService
 
     public async Task<AdminLocationDto> CreateAdminLocationAsync(AdminUpsertLocationRequest request)
     {
+        if (string.IsNullOrWhiteSpace(request.LocationName))
+        {
+            throw new AppException("Location name is required", ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Address))
+        {
+            throw new AppException("Address is required", ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
+        }
+
+        if (!request.Type.HasValue)
+        {
+            throw new AppException("Type is required", ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
+        }
+
+        if (!request.Status.HasValue)
+        {
+            throw new AppException("Status is required", ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
+        }
+
         if (request.Status is not (LocationStatuses.Inactive or LocationStatuses.Pending or LocationStatuses.Approved or LocationStatuses.Rejected or LocationStatuses.Active))
         {
             throw new AppException("Location status is invalid", ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
@@ -258,8 +278,8 @@ public class LocationService : ILocationService
             AddressLink = string.IsNullOrWhiteSpace(request.AddressLink) ? null : request.AddressLink.Trim(),
             OpeningHours = openingHours,
             ClosingHours = closingHours,
-            Type = request.Type,
-            Status = request.Status
+            Type = request.Type.Value,
+            Status = request.Status.Value
         };
 
         await _locationRepository.AddLocationAsync(location);
@@ -268,7 +288,8 @@ public class LocationService : ILocationService
 
     public async Task<AdminLocationDto> UpdateAdminLocationAsync(Guid locationId, AdminUpsertLocationRequest request)
     {
-        if (request.Status is not (LocationStatuses.Inactive or LocationStatuses.Pending or LocationStatuses.Approved or LocationStatuses.Rejected or LocationStatuses.Active))
+        if (request.Status.HasValue
+            && request.Status is not (LocationStatuses.Inactive or LocationStatuses.Pending or LocationStatuses.Approved or LocationStatuses.Rejected or LocationStatuses.Active))
         {
             throw new AppException("Location status is invalid", ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
         }
@@ -297,13 +318,7 @@ public class LocationService : ILocationService
                 var adminChangedCoreFields = !MatchesCurrentLocation(entity, request);
                 if (adminChangedCoreFields)
                 {
-                    entity.LocationName = request.LocationName.Trim();
-                    entity.Description = request.Description?.Trim();
-                    entity.Address = request.Address.Trim();
-                    entity.AddressLink = string.IsNullOrWhiteSpace(request.AddressLink) ? null : request.AddressLink.Trim();
-                    entity.OpeningHours = openingHours;
-                    entity.ClosingHours = closingHours;
-                    entity.Type = request.Type;
+                    ApplyAdminUpdate(entity, request, openingHours, closingHours);
                 }
                 else
                 {
@@ -316,8 +331,12 @@ public class LocationService : ILocationService
                     entity.Type = entity.PendingType ?? entity.Type;
                 }
 
-                entity.OwnerId = request.OwnerId;
-                entity.Status = request.Status;
+                if (request.OwnerId.HasValue)
+                {
+                    entity.OwnerId = request.OwnerId;
+                }
+
+                entity.Status = request.Status.Value;
 
                 ClearPendingUpdate(entity);
                 await _locationRepository.UpdateLocationAsync(entity);
@@ -326,19 +345,28 @@ public class LocationService : ILocationService
             }
         }
 
-        entity.LocationName = request.LocationName.Trim();
-        entity.OwnerId = request.OwnerId;
-        entity.Description = request.Description?.Trim();
-        entity.Address = request.Address.Trim();
-        entity.AddressLink = string.IsNullOrWhiteSpace(request.AddressLink) ? null : request.AddressLink.Trim();
-        entity.OpeningHours = openingHours;
-        entity.ClosingHours = closingHours;
-        entity.Type = request.Type;
-        entity.Status = request.Status;
-        ClearPendingUpdate(entity);
+        ApplyAdminUpdate(entity, request, openingHours, closingHours);
+
+        if (request.OwnerId.HasValue)
+        {
+            entity.OwnerId = request.OwnerId;
+        }
+
+        if (request.Status.HasValue)
+        {
+            entity.Status = request.Status.Value;
+        }
+
+        if (HasCoreLocationChanges(request))
+        {
+            ClearPendingUpdate(entity);
+        }
 
         await _locationRepository.UpdateLocationAsync(entity);
-        await _locationRepository.ClearLocationMediaAsync(entity.Id, "location-pending");
+        if (HasCoreLocationChanges(request))
+        {
+            await _locationRepository.ClearLocationMediaAsync(entity.Id, "location-pending");
+        }
         return await GetAdminLocationDetailAsync(entity.Id);
     }
 
@@ -419,12 +447,66 @@ public class LocationService : ILocationService
 
     private static bool MatchesCurrentLocation(Core.Models.Location entity, AdminUpsertLocationRequest request)
     {
+        if (!HasCoreLocationChanges(request))
+        {
+            return true;
+        }
+
         var normalizedRequestAddressLink = string.IsNullOrWhiteSpace(request.AddressLink) ? null : request.AddressLink.Trim();
-        return entity.LocationName == request.LocationName.Trim()
+        return entity.LocationName == request.LocationName?.Trim()
             && entity.Description == request.Description?.Trim()
-            && entity.Address == request.Address.Trim()
+            && entity.Address == request.Address?.Trim()
             && entity.AddressLink == normalizedRequestAddressLink
             && entity.Type == request.Type;
+    }
+
+    private static bool HasCoreLocationChanges(AdminUpsertLocationRequest request)
+    {
+        return request.LocationName != null
+            || request.Description != null
+            || request.Address != null
+            || request.AddressLink != null
+            || request.OpeningHours != null
+            || request.ClosingHours != null
+            || request.Type.HasValue;
+    }
+
+    private static void ApplyAdminUpdate(Core.Models.Location entity, AdminUpsertLocationRequest request, TimeSpan? openingHours, TimeSpan? closingHours)
+    {
+        if (request.LocationName != null)
+        {
+            entity.LocationName = request.LocationName.Trim();
+        }
+
+        if (request.Description != null)
+        {
+            entity.Description = request.Description.Trim();
+        }
+
+        if (request.Address != null)
+        {
+            entity.Address = request.Address.Trim();
+        }
+
+        if (request.AddressLink != null)
+        {
+            entity.AddressLink = string.IsNullOrWhiteSpace(request.AddressLink) ? null : request.AddressLink.Trim();
+        }
+
+        if (request.OpeningHours != null)
+        {
+            entity.OpeningHours = openingHours;
+        }
+
+        if (request.ClosingHours != null)
+        {
+            entity.ClosingHours = closingHours;
+        }
+
+        if (request.Type.HasValue)
+        {
+            entity.Type = request.Type.Value;
+        }
     }
 
     private static void ClearPendingUpdate(Core.Models.Location entity)
