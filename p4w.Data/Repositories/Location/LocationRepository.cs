@@ -53,6 +53,11 @@ public class LocationRepository : ILocationRepository
                 Description = x.Description,
                 Address = x.Address,
                 AddressLink = x.AddressLink,
+                MediaLinkUrls = _context.MediaLinks
+                    .Where(m => m.EntityType == LocationMediaEntityType && m.EntityId == x.Id)
+                    .OrderBy(m => m.SortOrder)
+                    .Select(m => m.Media.Url)
+                    .ToList(),
                 Type = x.Type,
                 OpeningHours = x.OpeningHours.HasValue ? x.OpeningHours.Value.ToString(@"hh\:mm\:ss") : null,
                 ClosingHours = x.ClosingHours.HasValue ? x.ClosingHours.Value.ToString(@"hh\:mm\:ss") : null,
@@ -97,6 +102,11 @@ public class LocationRepository : ILocationRepository
             Description = location.Description,
             Address = location.Address,
             AddressLink = location.AddressLink,
+            MediaLinkUrls = await _context.MediaLinks
+                .Where(m => m.EntityType == LocationMediaEntityType && m.EntityId == location.Id)
+                .OrderBy(m => m.SortOrder)
+                .Select(m => m.Media.Url)
+                .ToListAsync(),
             Type = location.Type,
             OpeningHours = location.OpeningHours.HasValue ? location.OpeningHours.Value.ToString(@"hh\:mm\:ss") : null,
             ClosingHours = location.ClosingHours.HasValue ? location.ClosingHours.Value.ToString(@"hh\:mm\:ss") : null,
