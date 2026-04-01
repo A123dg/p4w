@@ -10,6 +10,7 @@ namespace p4w.Data.Repositories.Report;
 public class ReportRepository : IReportRepository
 {
     private readonly AppDbContext _context;
+    private const string UnknownUserName = "Nguoi dung da khoa";
 
     public ReportRepository(AppDbContext context)
     {
@@ -52,7 +53,11 @@ public class ReportRepository : IReportRepository
         if (!string.IsNullOrWhiteSpace(search))
         {
             var normalizedSearch = search.Trim();
-            query = query.Where(x => x.User.UserName.Contains(normalizedSearch) || x.Reason.Contains(normalizedSearch) || x.TargetId.Contains(normalizedSearch));
+            query = query.Where(x =>
+                (x.User.UserName != null && x.User.UserName.Contains(normalizedSearch)) ||
+                x.User.Email.Contains(normalizedSearch) ||
+                x.Reason.Contains(normalizedSearch) ||
+                x.TargetId.Contains(normalizedSearch));
         }
 
         var total = await query.CountAsync();
@@ -112,7 +117,7 @@ public class ReportRepository : IReportRepository
         {
             Id = report.Id,
             UserId = report.UserId,
-            ReportedBy = report.User.UserName,
+            ReportedBy = report.User.UserName ?? report.User.Email ?? UnknownUserName,
             Reason = report.Reason,
             ReportedItemType = report.TargetType,
             ReportedItemId = report.TargetId,

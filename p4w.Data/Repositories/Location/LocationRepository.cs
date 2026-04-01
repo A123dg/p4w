@@ -17,6 +17,7 @@ public class LocationRepository : ILocationRepository
     private const string PendingLocationMediaEntityType = "location-pending";
     private const string ReviewMediaEntityType = "review";
     private const string CommentMediaEntityType = "comment";
+    private const string UnknownUserName = "Nguoi dung da khoa";
 
     public LocationRepository(AppDbContext context)
     {
@@ -122,7 +123,7 @@ public class LocationRepository : ILocationRepository
                 {
                     Id = x.Id,
                     UserId = x.UserId,
-                    UserName = x.User.UserName,
+                    UserName = x.User.UserName ?? x.User.Email ?? UnknownUserName,
                     AvatarUrl = x.User.MediaLinks
                         .Where(m => m.EntityType == "avatar")
                         .OrderBy(m => m.SortOrder)
@@ -163,7 +164,7 @@ public class LocationRepository : ILocationRepository
             {
                 Id = x.Id,
                 UserId = x.UserId,
-                UserName = x.User.UserName,
+                UserName = x.User.UserName ?? x.User.Email ?? UnknownUserName,
                 AvatarUrl = x.User.MediaLinks
                     .Where(m => m.EntityType == "avatar")
                     .OrderBy(m => m.SortOrder)
@@ -208,7 +209,7 @@ public class LocationRepository : ILocationRepository
             {
                 Id = x.Id,
                 UserId = x.UserId,
-                UserName = x.User.UserName,
+                UserName = x.User.UserName ?? x.User.Email ?? UnknownUserName,
                 AvatarUrl = x.User.MediaLinks
                     .Where(m => m.EntityType == "avatar")
                     .OrderBy(m => m.SortOrder)
@@ -269,7 +270,7 @@ public class LocationRepository : ILocationRepository
             {
                 Id = x.Id,
                 UserId = x.UserId,
-                UserName = x.User.UserName,
+                UserName = x.User.UserName ?? x.User.Email ?? UnknownUserName,
                 AvatarUrl = x.User.MediaLinks
                     .Where(m => m.EntityType == "avatar")
                     .OrderBy(m => m.SortOrder)
@@ -457,7 +458,7 @@ query = query.Where(x =>
             {
                 Id = x.Id,
                 OwnerId = x.OwnerId,
-                OwnerName = x.Owner != null ? x.Owner.UserName : null,
+                OwnerName = x.Owner != null ? (x.Owner.UserName ?? x.Owner.Email ?? UnknownUserName) : null,
                 LocationName = x.LocationName,
                 Description = x.Description,
                 Address = x.Address,
@@ -522,7 +523,11 @@ query = query.Where(x =>
         if (!string.IsNullOrWhiteSpace(search))
         {
             var normalizedSearch = search.Trim();
-            query = query.Where(x => x.User.UserName.Contains(normalizedSearch) || x.Content.Contains(normalizedSearch) || x.Location.LocationName.Contains(normalizedSearch));
+            query = query.Where(x =>
+                (x.User.UserName != null && x.User.UserName.Contains(normalizedSearch)) ||
+                x.User.Email.Contains(normalizedSearch) ||
+                x.Content.Contains(normalizedSearch) ||
+                x.Location.LocationName.Contains(normalizedSearch));
         }
 
         if (status.HasValue)
@@ -544,7 +549,7 @@ query = query.Where(x =>
             {
                 Id = x.Id,
                 UserId = x.UserId,
-                UserName = x.User.UserName,
+                UserName = x.User.UserName ?? x.User.Email ?? UnknownUserName,
                 LocationId = x.LocationId,
                 LocationName = x.Location.LocationName,
                 Rating = x.Rating,
@@ -582,7 +587,8 @@ query = query.Where(x =>
         {
             var normalizedSearch = search.Trim();
             query = query.Where(x =>
-                x.User.UserName.Contains(normalizedSearch) ||
+                (x.User.UserName != null && x.User.UserName.Contains(normalizedSearch)) ||
+                x.User.Email.Contains(normalizedSearch) ||
                 x.Content.Contains(normalizedSearch) ||
                 x.Review.Content.Contains(normalizedSearch) ||
                 x.Review.Location.LocationName.Contains(normalizedSearch));
@@ -604,7 +610,7 @@ query = query.Where(x =>
                 ReviewId = x.ReviewId,
                 ParentId = x.ParentId,
                 UserId = x.UserId,
-                UserName = x.User.UserName,
+                UserName = x.User.UserName ?? x.User.Email ?? UnknownUserName,
                 LocationId = x.Review.LocationId,
                 LocationName = x.Review.Location.LocationName,
                 ReviewContent = x.Review.Content,
@@ -638,7 +644,7 @@ query = query.Where(x =>
             {
                 Id = x.Id,
                 UserId = x.UserId,
-                UserName = x.User.UserName,
+                UserName = x.User.UserName ?? x.User.Email ?? UnknownUserName,
                 LocationId = x.LocationId,
                 LocationName = x.Location.LocationName,
                 Rating = x.Rating,
@@ -663,7 +669,7 @@ query = query.Where(x =>
                 ReviewId = x.ReviewId,
                 ParentId = x.ParentId,
                 UserId = x.UserId,
-                UserName = x.User.UserName,
+                UserName = x.User.UserName ?? x.User.Email ?? UnknownUserName,
                 LocationId = x.Review.LocationId,
                 LocationName = x.Review.Location.LocationName,
                 ReviewContent = x.Review.Content,
@@ -701,7 +707,7 @@ query = query.Where(x =>
             {
                 Id = x.Id,
                 OwnerId = x.OwnerId,
-                OwnerName = x.Owner != null ? x.Owner.UserName : null,
+                OwnerName = x.Owner != null ? (x.Owner.UserName ?? x.Owner.Email ?? UnknownUserName) : null,
                 LocationName = x.LocationName,
                 Description = x.Description,
                 Address = x.Address,
