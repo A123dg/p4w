@@ -21,8 +21,10 @@ public interface ILocationRepository
     Task<Location?> GetLocationEntityForAdminAsync(Guid locationId);
     Task<Review?> GetReviewEntityForAdminAsync(Guid reviewId);
     Task AddReviewAsync(Review review);
+    Task AddReviewMediaAsync(Guid userId, Guid reviewId, IEnumerable<string>? mediaLinkUrls);
     Task UpdateReviewAsync(Review review);
     Task AddCommentAsync(Comment comment);
+    Task AddCommentMediaAsync(Guid userId, Guid commentId, string? mediaLinkUrl);
     Task<PagedResult<AdminLocationDto>> GetAdminLocationsAsync(string? search, int? type, int? status, int page, int pageSize);
     Task<PagedResult<AdminReviewDto>> GetAdminReviewsAsync(string? search, int? status, int? minRating, int page, int pageSize);
     Task<AdminLocationDto?> GetAdminLocationDetailAsync(Guid locationId);
@@ -34,3 +36,4 @@ public interface ILocationRepository
     Task ClearLocationMediaAsync(Guid locationId, string entityType);
     Task UpdateLocationAsync(p4w.Core.Models.Location location);
 }
+

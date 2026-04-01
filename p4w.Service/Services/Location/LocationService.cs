@@ -146,6 +146,17 @@ public class LocationService : ILocationService
             throw new AppException("Review content is required", ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
         }
 
+        var normalizedReviewMediaUrls = request.MediaLinkUrls?
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Select(x => x.Trim())
+            .Distinct()
+            .ToList() ?? [];
+
+        if (normalizedReviewMediaUrls.Count > 3)
+        {
+            throw new AppException("Review supports up to 3 images", ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
+        }
+
         var location = await _locationRepository.GetLocationEntityAsync(request.LocationId);
         if (location == null)
         {
@@ -164,6 +175,7 @@ public class LocationService : ILocationService
         };
 
         await _locationRepository.AddReviewAsync(review);
+        await _locationRepository.AddReviewMediaAsync(userId, review.Id, normalizedReviewMediaUrls);
 
         var createdReview = await _locationRepository.GetReviewEntityAsync(review.Id);
         return new ReviewDto
@@ -179,7 +191,8 @@ public class LocationService : ILocationService
             Rating = createdReview.Rating,
             Content = createdReview.Content,
             CreatedAt = createdReview.CreatedAt,
-            CommentCount = createdReview.Comments.Count
+            CommentCount = createdReview.Comments.Count,
+            MediaLinkUrls = normalizedReviewMediaUrls
         };
     }
 
@@ -194,6 +207,11 @@ public class LocationService : ILocationService
         if (string.IsNullOrWhiteSpace(request.Content))
         {
             throw new AppException("Comment content is required", ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.MediaLinkUrl) && request.MediaLinkUrl.Trim().Length == 0)
+        {
+            request.MediaLinkUrl = null;
         }
 
         if (request.ParentId.HasValue)
@@ -217,6 +235,7 @@ public class LocationService : ILocationService
         };
 
         await _locationRepository.AddCommentAsync(comment);
+        await _locationRepository.AddCommentMediaAsync(userId, comment.Id, request.MediaLinkUrl);
 
         var createdComment = await _locationRepository.GetCommentDetailAsync(comment.Id);
         return createdComment!;
@@ -522,3 +541,4 @@ public class LocationService : ILocationService
         entity.PendingUpdatedAt = null;
     }
 }
+

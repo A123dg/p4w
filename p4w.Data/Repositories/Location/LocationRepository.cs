@@ -15,6 +15,8 @@ public class LocationRepository : ILocationRepository
     private readonly AppDbContext _context;
     private const string LocationMediaEntityType = "location";
     private const string PendingLocationMediaEntityType = "location-pending";
+    private const string ReviewMediaEntityType = "review";
+    private const string CommentMediaEntityType = "comment";
 
     public LocationRepository(AppDbContext context)
     {
@@ -129,7 +131,12 @@ public class LocationRepository : ILocationRepository
                     Rating = x.Rating,
                     Content = x.Content,
                     CreatedAt = x.CreatedAt,
-                    CommentCount = x.Comments.Count(c => c.Status == CommentStatuses.Active)
+                    CommentCount = x.Comments.Count(c => c.Status == CommentStatuses.Active),
+                    MediaLinkUrls = _context.MediaLinks
+                        .Where(m => m.EntityType == ReviewMediaEntityType && m.EntityId == x.Id)
+                        .OrderBy(m => m.SortOrder)
+                        .Select(m => m.Media.Url)
+                        .ToList()
                 })
                 .ToList()
         };
@@ -165,7 +172,12 @@ public class LocationRepository : ILocationRepository
                 Rating = x.Rating,
                 Content = x.Content,
                 CreatedAt = x.CreatedAt,
-                CommentCount = x.Comments.Count(c => c.Status == CommentStatuses.Active)
+                CommentCount = x.Comments.Count(c => c.Status == CommentStatuses.Active),
+                MediaLinkUrls = _context.MediaLinks
+                    .Where(m => m.EntityType == ReviewMediaEntityType && m.EntityId == x.Id)
+                    .OrderBy(m => m.SortOrder)
+                    .Select(m => m.Media.Url)
+                    .ToList()
             })
             .ToListAsync();
 
@@ -204,7 +216,12 @@ public class LocationRepository : ILocationRepository
                     .FirstOrDefault() ?? string.Empty,
                 ParentId = x.ParentId,
                 Content = x.Content,
-                CreatedAt = x.CreatedAt
+                CreatedAt = x.CreatedAt,
+                MediaLinkUrl = _context.MediaLinks
+                    .Where(m => m.EntityType == CommentMediaEntityType && m.EntityId == x.Id)
+                    .OrderBy(m => m.SortOrder)
+                    .Select(m => m.Media.Url)
+                    .FirstOrDefault()
             })
             .ToListAsync();
 
@@ -260,7 +277,12 @@ public class LocationRepository : ILocationRepository
                     .FirstOrDefault() ?? string.Empty,
                 ParentId = x.ParentId,
                 Content = x.Content,
-                CreatedAt = x.CreatedAt
+                CreatedAt = x.CreatedAt,
+                MediaLinkUrl = _context.MediaLinks
+                    .Where(m => m.EntityType == CommentMediaEntityType && m.EntityId == x.Id)
+                    .OrderBy(m => m.SortOrder)
+                    .Select(m => m.Media.Url)
+                    .FirstOrDefault()
             })
             .FirstOrDefaultAsync();
     }
@@ -307,6 +329,48 @@ public class LocationRepository : ILocationRepository
         await _context.SaveChangesAsync();
     }
 
+    public async Task AddReviewMediaAsync(Guid userId, Guid reviewId, IEnumerable<string>? mediaLinkUrls)
+    {
+        var normalizedUrls = mediaLinkUrls?
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Select(x => x.Trim())
+            .Distinct()
+            .Take(3)
+            .ToList() ?? [];
+
+        if (normalizedUrls.Count == 0)
+        {
+            return;
+        }
+
+        var mediaLinks = normalizedUrls.Select((url, index) =>
+        {
+            var mediaId = Guid.NewGuid();
+            return new MediaLink
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                EntityType = ReviewMediaEntityType,
+                EntityId = reviewId,
+                MediaType = "image",
+                SortOrder = index,
+                MediaId = mediaId,
+                Media = new Media
+                {
+                    Id = mediaId,
+                    Url = url,
+                    MimeType = "image/jpeg",
+                    Size = 0,
+                    Status = UserStatuses.Active,
+                    CreatedAt = DateTime.UtcNow
+                }
+            };
+        }).ToList();
+
+        await _context.MediaLinks.AddRangeAsync(mediaLinks);
+        await _context.SaveChangesAsync();
+    }
+
     public async Task UpdateReviewAsync(Review review)
     {
         _context.Reviews.Update(review);
@@ -316,6 +380,40 @@ public class LocationRepository : ILocationRepository
     public async Task AddCommentAsync(Comment comment)
     {
         _context.Comments.Add(comment);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task AddCommentMediaAsync(Guid userId, Guid commentId, string? mediaLinkUrl)
+    {
+        if (string.IsNullOrWhiteSpace(mediaLinkUrl))
+        {
+            return;
+        }
+
+        var mediaId = Guid.NewGuid();
+        var media = new Media
+        {
+            Id = mediaId,
+            Url = mediaLinkUrl.Trim(),
+            MimeType = "image/jpeg",
+            Size = 0,
+            Status = UserStatuses.Active,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var mediaLink = new MediaLink
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            EntityType = CommentMediaEntityType,
+            EntityId = commentId,
+            MediaType = "image",
+            SortOrder = 0,
+            MediaId = mediaId,
+            Media = media
+        };
+
+        await _context.MediaLinks.AddAsync(mediaLink);
         await _context.SaveChangesAsync();
     }
 
@@ -663,3 +761,6 @@ query = query.Where(x =>
         await _context.SaveChangesAsync();
     }
 }
+
+
+

@@ -10,4 +10,5 @@ public class ReviewDto
     public string Content { get; set; } = null!;
     public DateTime CreatedAt { get; set; }
     public int CommentCount { get; set; }
+    public List<string> MediaLinkUrls { get; set; } = [];
 }
