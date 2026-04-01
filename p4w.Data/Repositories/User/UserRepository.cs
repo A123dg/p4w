@@ -166,7 +166,6 @@ public class UserRepository : IUserRepository {
         }
 
         var location = await _context.Locations
-            .Include(x => x.Reviews)
             .FirstOrDefaultAsync(x => x.Id == recentInteraction.LocationId && x.Status == LocationStatuses.Active);
 
         if (location == null)
@@ -178,15 +177,23 @@ public class UserRepository : IUserRepository {
         {
             Id = location.Id,
             LocationName = location.LocationName,
-            Description = location.Description,
             Address = location.Address,
             AddressLink = location.AddressLink,
-            OpeningHours = location.OpeningHours.HasValue ? location.OpeningHours.Value.ToString(@"hh\:mm\:ss") : null,
-            ClosingHours = location.ClosingHours.HasValue ? location.ClosingHours.Value.ToString(@"hh\:mm\:ss") : null,
-            AverageRating = location.Reviews.Where(x => x.Status == ReviewStatuses.Active).Any() ? Math.Round(location.Reviews.Where(x => x.Status == ReviewStatuses.Active).Average(r => r.Rating), 1) : 0,
-            ReviewCount = location.Reviews.Count(x => x.Status == ReviewStatuses.Active),
-            LastInteractionAt = recentInteraction.CreatedAt,
-            LastInteractionType = recentInteraction.InteractionType
+            MediaLinkUrls = _context.MediaLinks
+                .Where(m => m.EntityType == "location" && m.EntityId == location.Id)
+                .OrderBy(m => m.SortOrder)
+                .Select(m => m.Media.Url)
+                .ToList(),
+            Status = location.Status,
+            StatusName = location.Status == LocationStatuses.Pending
+                ? "pending"
+                : location.Status == LocationStatuses.Approved
+                    ? "approved"
+                    : location.Status == LocationStatuses.Rejected
+                        ? "rejected"
+                        : location.Status == LocationStatuses.Active
+                            ? "active"
+                            : "inactive"
         };
     }
 
@@ -313,3 +320,4 @@ query = query.Where(x =>
         };
     }
 }
+

@@ -224,6 +224,8 @@ public class AuthService : IAuthService
         await _userRepository.UpdateAsync(user);
 
         user = await _userRepository.GetUserByIdAsync(userId);
+        var recentLocation = await _userRepository.GetRecentLocationByUserIdAsync(userId);
+        var ownedLocations = await _userRepository.GetOwnedLocationsByUserIdAsync(userId);
 
         var profile = new UserProfileDto
         {
@@ -241,7 +243,9 @@ public class AuthService : IAuthService
                 .Where(m => m.EntityType == "avatar")
                 .OrderBy(m => m.SortOrder)
                 .Select(m => m.Media.Url)
-                .FirstOrDefault() ?? string.Empty
+                .FirstOrDefault() ?? string.Empty,
+            RecentLocation = recentLocation,
+            OwnedLocations = ownedLocations
         };
 
         return new ApiResponse<UserProfileDto>
@@ -279,3 +283,4 @@ public class AuthService : IAuthService
         };
     }
 }
+
