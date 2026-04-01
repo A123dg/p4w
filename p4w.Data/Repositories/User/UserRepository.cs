@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using p4w.Core.Constants;
 using Microsoft.EntityFrameworkCore;
 using p4w.Core.Constants.Statuses;
 using p4w.Core.Dtos.User;
@@ -111,7 +112,7 @@ public class UserRepository : IUserRepository {
             .Include(u => u.OwnedLocations)
             .FirstOrDefaultAsync(u => u.Id == id && u.Status == UserStatuses.Active);
         if (user == null) {
-            throw new AppException("User not found", ErrorCodes.NotFound, StatusCodes.Status404NotFound);
+            throw new AppException(MessageConstant.UserMessage.USER_NOT_FOUND, ErrorCodes.NotFound, StatusCodes.Status404NotFound);
         }
         return user;
     }
@@ -124,7 +125,7 @@ public class UserRepository : IUserRepository {
             .Include(u => u.OwnedLocations)
             .FirstOrDefaultAsync(u => u.Id == id && u.Status != UserStatuses.Inactive);
         if (user == null) {
-            throw new AppException("User not found", ErrorCodes.NotFound, StatusCodes.Status404NotFound);
+            throw new AppException(MessageConstant.UserMessage.USER_NOT_FOUND, ErrorCodes.NotFound, StatusCodes.Status404NotFound);
         }
         return user;
     }

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using p4w.Core.Constants;
 using p4w.Core.Dtos.Comment;
 using p4w.Core.Dtos.Location;
 using p4w.Core.Dtos.Review;
@@ -29,7 +30,7 @@ public class LocationController : ControllerBase
         {
             Code = 200,
             Success = true,
-            Message = "Locations retrieved successfully",
+            Message = MessageConstant.LocationMessage.LOCATIONS_RETRIEVED_SUCCESS,
             Data = locations.Items,
             MetaData = locations.MetaData
         });
@@ -43,7 +44,7 @@ public class LocationController : ControllerBase
         {
             Code = 200,
             Success = true,
-            Message = "Location detail retrieved successfully",
+            Message = MessageConstant.LocationMessage.LOCATION_DETAIL_RETRIEVED_SUCCESS,
             Data = location
         });
     }
@@ -56,7 +57,7 @@ public class LocationController : ControllerBase
         {
             Code = 200,
             Success = true,
-            Message = "Location reviews retrieved successfully",
+            Message = MessageConstant.LocationMessage.LOCATION_REVIEWS_RETRIEVED_SUCCESS,
             Data = reviews.Items,
             MetaData = reviews.MetaData
         });
@@ -73,7 +74,7 @@ public class LocationController : ControllerBase
         {
             Code = 200,
             Success = true,
-            Message = "Location created and pending admin approval",
+            Message = MessageConstant.LocationMessage.LOCATION_CREATED_PENDING_APPROVAL,
             Data = location
         });
     }
@@ -89,7 +90,7 @@ public class LocationController : ControllerBase
         {
             Code = 200,
             Success = true,
-            Message = "Location update submitted and waiting for admin approval",
+            Message = MessageConstant.LocationMessage.LOCATION_UPDATED_PENDING_APPROVAL,
             Data = location
         });
     }
@@ -105,7 +106,7 @@ public class LocationController : ControllerBase
         {
             Code = 200,
             Success = true,
-            Message = "Review created successfully",
+            Message = MessageConstant.ReviewMessage.REVIEW_CREATED_SUCCESS,
             Data = review
         });
     }
@@ -118,7 +119,7 @@ public class LocationController : ControllerBase
         {
             Code = 200,
             Success = true,
-            Message = "Review comments retrieved successfully",
+            Message = MessageConstant.ReviewMessage.REVIEW_COMMENTS_RETRIEVED_SUCCESS,
             Data = comments.Items,
             MetaData = comments.MetaData
         });
@@ -135,7 +136,7 @@ public class LocationController : ControllerBase
         {
             Code = 200,
             Success = true,
-            Message = "Comment created successfully",
+            Message = MessageConstant.CommentMessage.COMMENT_CREATED_SUCCESS,
             Data = comment
         });
     }
@@ -147,7 +148,7 @@ public class LocationController : ControllerBase
 
         if (string.IsNullOrWhiteSpace(userId))
         {
-            throw new Exception("Unauthorized");
+            throw new UnauthorizedAccessException();
         }
 
         return Guid.Parse(userId);

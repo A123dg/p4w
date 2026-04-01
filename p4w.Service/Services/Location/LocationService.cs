@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using p4w.Core.Constants;
 using p4w.Core.Constants.Statuses;
 using p4w.Core.Dtos.Comment;
 using p4w.Core.Dtos.Location;
@@ -31,7 +32,7 @@ public class LocationService : ILocationService
         var location = await _locationRepository.GetLocationDetailAsync(locationId);
         if (location == null)
         {
-            throw new AppException("Location not found", ErrorCodes.NotFound, StatusCodes.Status404NotFound);
+            throw new AppException(MessageConstant.LocationMessage.LOCATION_NOT_FOUND, ErrorCodes.NotFound, StatusCodes.Status404NotFound);
         }
 
         return location;
@@ -42,7 +43,7 @@ public class LocationService : ILocationService
         var location = await _locationRepository.GetLocationEntityAsync(locationId);
         if (location == null)
         {
-            throw new AppException("Location not found", ErrorCodes.NotFound, StatusCodes.Status404NotFound);
+            throw new AppException(MessageConstant.LocationMessage.LOCATION_NOT_FOUND, ErrorCodes.NotFound, StatusCodes.Status404NotFound);
         }
 
         return await _locationRepository.GetLocationReviewsAsync(locationId, page, pageSize);
@@ -53,7 +54,7 @@ public class LocationService : ILocationService
         var review = await _locationRepository.GetReviewEntityAsync(reviewId);
         if (review == null)
         {
-            throw new AppException("Review not found", ErrorCodes.NotFound, StatusCodes.Status404NotFound);
+            throw new AppException(MessageConstant.ReviewMessage.REVIEW_NOT_FOUND, ErrorCodes.NotFound, StatusCodes.Status404NotFound);
         }
 
         return await _locationRepository.GetReviewCommentsAsync(reviewId, page, pageSize);
@@ -91,17 +92,17 @@ public class LocationService : ILocationService
         var entity = await _locationRepository.GetLocationEntityForAdminAsync(locationId);
         if (entity == null)
         {
-            throw new AppException("Location not found", ErrorCodes.NotFound, StatusCodes.Status404NotFound);
+            throw new AppException(MessageConstant.LocationMessage.LOCATION_NOT_FOUND, ErrorCodes.NotFound, StatusCodes.Status404NotFound);
         }
 
         if (entity.OwnerId != userId)
         {
-            throw new AppException("You do not have permission to update this location", ErrorCodes.Forbidden, StatusCodes.Status403Forbidden);
+            throw new AppException(MessageConstant.LocationMessage.LOCATION_UPDATE_ACCESS_DENIED, ErrorCodes.Forbidden, StatusCodes.Status403Forbidden);
         }
 
         if (entity.Status == LocationStatuses.Inactive)
         {
-            throw new AppException("Inactive location cannot be updated", ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
+            throw new AppException(MessageConstant.LocationMessage.INACTIVE_LOCATION_CANNOT_BE_UPDATED, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
         }
 
         if (entity.Status == LocationStatuses.Pending)
@@ -138,12 +139,12 @@ public class LocationService : ILocationService
     {
         if (request.Rating < 1 || request.Rating > 5)
         {
-            throw new AppException("Rating must be between 1 and 5", ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
+            throw new AppException(MessageConstant.ReviewMessage.RATING_INVALID, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
         }
 
         if (string.IsNullOrWhiteSpace(request.Content))
         {
-            throw new AppException("Review content is required", ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
+            throw new AppException(MessageConstant.ReviewMessage.REVIEW_CONTENT_REQUIRED, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
         }
 
         var normalizedReviewMediaUrls = request.MediaLinkUrls?
@@ -154,13 +155,13 @@ public class LocationService : ILocationService
 
         if (normalizedReviewMediaUrls.Count > 3)
         {
-            throw new AppException("Review supports up to 3 images", ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
+            throw new AppException(MessageConstant.ReviewMessage.REVIEW_MAX_IMAGES, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
         }
 
         var location = await _locationRepository.GetLocationEntityAsync(request.LocationId);
         if (location == null)
         {
-            throw new AppException("Location not found", ErrorCodes.NotFound, StatusCodes.Status404NotFound);
+            throw new AppException(MessageConstant.LocationMessage.LOCATION_NOT_FOUND, ErrorCodes.NotFound, StatusCodes.Status404NotFound);
         }
 
         var review = new Review
@@ -201,12 +202,12 @@ public class LocationService : ILocationService
         var review = await _locationRepository.GetReviewEntityAsync(request.ReviewId);
         if (review == null)
         {
-            throw new AppException("Review not found", ErrorCodes.NotFound, StatusCodes.Status404NotFound);
+            throw new AppException(MessageConstant.ReviewMessage.REVIEW_NOT_FOUND, ErrorCodes.NotFound, StatusCodes.Status404NotFound);
         }
 
         if (string.IsNullOrWhiteSpace(request.Content))
         {
-            throw new AppException("Comment content is required", ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
+            throw new AppException(MessageConstant.CommentMessage.COMMENT_CONTENT_REQUIRED, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
         }
 
         if (!string.IsNullOrWhiteSpace(request.MediaLinkUrl) && request.MediaLinkUrl.Trim().Length == 0)
@@ -219,7 +220,7 @@ public class LocationService : ILocationService
             var parentComment = await _locationRepository.GetCommentEntityAsync(request.ParentId.Value);
             if (parentComment == null || parentComment.ReviewId != request.ReviewId)
             {
-                throw new AppException("Parent comment is invalid", ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
+                throw new AppException(MessageConstant.CommentMessage.PARENT_COMMENT_INVALID, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
             }
         }
 
@@ -251,7 +252,7 @@ public class LocationService : ILocationService
         var location = await _locationRepository.GetAdminLocationDetailAsync(locationId);
         if (location == null)
         {
-            throw new AppException("Location not found", ErrorCodes.NotFound, StatusCodes.Status404NotFound);
+            throw new AppException(MessageConstant.LocationMessage.LOCATION_NOT_FOUND, ErrorCodes.NotFound, StatusCodes.Status404NotFound);
         }
 
         return location;
@@ -261,27 +262,27 @@ public class LocationService : ILocationService
     {
         if (string.IsNullOrWhiteSpace(request.LocationName))
         {
-            throw new AppException("Location name is required", ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
+            throw new AppException(MessageConstant.LocationMessage.LOCATION_NAME_REQUIRED, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
         }
 
         if (string.IsNullOrWhiteSpace(request.Address))
         {
-            throw new AppException("Address is required", ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
+            throw new AppException(MessageConstant.LocationMessage.ADDRESS_REQUIRED, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
         }
 
         if (!request.Type.HasValue)
         {
-            throw new AppException("Type is required", ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
+            throw new AppException(MessageConstant.LocationMessage.TYPE_REQUIRED, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
         }
 
         if (!request.Status.HasValue)
         {
-            throw new AppException("Status is required", ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
+            throw new AppException(MessageConstant.LocationMessage.STATUS_REQUIRED, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
         }
 
         if (request.Status is not (LocationStatuses.Inactive or LocationStatuses.Pending or LocationStatuses.Approved or LocationStatuses.Rejected or LocationStatuses.Active))
         {
-            throw new AppException("Location status is invalid", ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
+            throw new AppException(MessageConstant.LocationMessage.LOCATION_STATUS_INVALID, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
         }
 
         var openingHours = ParseOperatingHours(request.OpeningHours, nameof(request.OpeningHours));
@@ -310,7 +311,7 @@ public class LocationService : ILocationService
         if (request.Status.HasValue
             && request.Status is not (LocationStatuses.Inactive or LocationStatuses.Pending or LocationStatuses.Approved or LocationStatuses.Rejected or LocationStatuses.Active))
         {
-            throw new AppException("Location status is invalid", ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
+            throw new AppException(MessageConstant.LocationMessage.LOCATION_STATUS_INVALID, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
         }
 
         var openingHours = ParseOperatingHours(request.OpeningHours, nameof(request.OpeningHours));
@@ -319,7 +320,7 @@ public class LocationService : ILocationService
         var entity = await _locationRepository.GetLocationEntityForAdminAsync(locationId);
         if (entity == null)
         {
-            throw new AppException("Location not found", ErrorCodes.NotFound, StatusCodes.Status404NotFound);
+            throw new AppException(MessageConstant.LocationMessage.LOCATION_NOT_FOUND, ErrorCodes.NotFound, StatusCodes.Status404NotFound);
         }
 
         if (entity.HasPendingUpdate)
@@ -394,7 +395,7 @@ public class LocationService : ILocationService
         var entity = await _locationRepository.GetLocationEntityForAdminAsync(locationId);
         if (entity == null)
         {
-            throw new AppException("Location not found", ErrorCodes.NotFound, StatusCodes.Status404NotFound);
+            throw new AppException(MessageConstant.LocationMessage.LOCATION_NOT_FOUND, ErrorCodes.NotFound, StatusCodes.Status404NotFound);
         }
 
         entity.Status = LocationStatuses.Inactive;
@@ -412,7 +413,7 @@ public class LocationService : ILocationService
         var review = await _locationRepository.GetAdminReviewDetailAsync(reviewId);
         if (review == null)
         {
-            throw new AppException("Review not found", ErrorCodes.NotFound, StatusCodes.Status404NotFound);
+            throw new AppException(MessageConstant.ReviewMessage.REVIEW_NOT_FOUND, ErrorCodes.NotFound, StatusCodes.Status404NotFound);
         }
 
         return review;
@@ -422,13 +423,13 @@ public class LocationService : ILocationService
     {
         if (request.Status is not (ReviewStatuses.Inactive or ReviewStatuses.Active))
         {
-            throw new AppException("Review status is invalid", ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
+            throw new AppException(MessageConstant.ReviewMessage.REVIEW_STATUS_INVALID, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
         }
 
         var review = await _locationRepository.GetReviewEntityForAdminAsync(reviewId);
         if (review == null)
         {
-            throw new AppException("Review not found", ErrorCodes.NotFound, StatusCodes.Status404NotFound);
+            throw new AppException(MessageConstant.ReviewMessage.REVIEW_NOT_FOUND, ErrorCodes.NotFound, StatusCodes.Status404NotFound);
         }
 
         review.Status = request.Status;
@@ -441,7 +442,7 @@ public class LocationService : ILocationService
         var review = await _locationRepository.GetReviewEntityForAdminAsync(reviewId);
         if (review == null)
         {
-            throw new AppException("Review not found", ErrorCodes.NotFound, StatusCodes.Status404NotFound);
+            throw new AppException(MessageConstant.ReviewMessage.REVIEW_NOT_FOUND, ErrorCodes.NotFound, StatusCodes.Status404NotFound);
         }
 
         review.Status = ReviewStatuses.Inactive;
@@ -461,7 +462,7 @@ public class LocationService : ILocationService
             return parsedValue;
         }
 
-        throw new AppException($"{fieldName} must be in hh:mm:ss format", ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
+        throw new AppException(MessageConstant.LocationMessage.TIME_FORMAT_INVALID, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
     }
 
     private static bool MatchesCurrentLocation(Core.Models.Location entity, AdminUpsertLocationRequest request)

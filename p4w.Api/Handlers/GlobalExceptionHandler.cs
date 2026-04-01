@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Diagnostics;
+using p4w.Core.Constants;
 using p4w.Core.Exceptions;
 using p4w.Core.Paginations;
 
@@ -12,7 +13,7 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
 
         var status = StatusCodes.Status500InternalServerError;
         var code = ErrorCodes.InternalServerError;
-        var message = "Internal server error";
+        var message = MessageConstant.CommonMessage.INTERNAL_SERVER_ERROR;
 
         switch (exception)
         {
@@ -24,12 +25,12 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
             case UnauthorizedAccessException:
                 status = StatusCodes.Status401Unauthorized;
                 code = ErrorCodes.Unauthorized;
-                message = "Unauthorized";
+                message = MessageConstant.CommonMessage.UNAUTHORIZED;
                 break;
             case BadHttpRequestException:
                 status = StatusCodes.Status400BadRequest;
                 code = ErrorCodes.BadRequest;
-                message = exception.Message;
+                message = MessageConstant.CommonMessage.MISSING_PARAM;
                 break;
         }
 

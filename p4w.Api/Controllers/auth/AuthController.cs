@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using p4w.Api.Dtos.Auth;
+using p4w.Core.Constants;
 using p4w.Core.Dtos.User;
+using p4w.Core.Exceptions;
 using p4w.Core.Interfaces.Repositories.Auth;
 using p4w.Core.Interfaces.Services.Auth;
 using p4w.Core.Paginations;
@@ -88,7 +90,7 @@ public class AuthController : ControllerBase
 
         if (string.IsNullOrWhiteSpace(code))
         {
-            return BuildGoogleRedirectResult(effectiveRedirectUri, success: false, message: "missing_code");
+            return BuildGoogleRedirectResult(effectiveRedirectUri, success: false, message: MessageConstant.AuthMessage.GOOGLE_MISSING_CODE);
         }
 
         var clientId = _configuration["Authentication:Google:ClientId"]
@@ -120,7 +122,7 @@ public class AuthController : ControllerBase
 
         if (!tokenResponse.IsSuccessStatusCode)
         {
-            return BuildGoogleRedirectResult(effectiveRedirectUri, success: false, message: "google_token_exchange_failed");
+            return BuildGoogleRedirectResult(effectiveRedirectUri, success: false, message: MessageConstant.AuthMessage.GOOGLE_TOKEN_EXCHANGE_FAILED);
         }
 
         var tokenPayload = JsonSerializer.Deserialize<GoogleTokenResponse>(tokenJson, new JsonSerializerOptions
@@ -130,7 +132,7 @@ public class AuthController : ControllerBase
 
         if (string.IsNullOrWhiteSpace(tokenPayload?.IdToken))
         {
-            return BuildGoogleRedirectResult(effectiveRedirectUri, success: false, message: "missing_id_token");
+            return BuildGoogleRedirectResult(effectiveRedirectUri, success: false, message: MessageConstant.AuthMessage.GOOGLE_MISSING_ID_TOKEN);
         }
 
         var loginResponse = await _authService.LoginWithGoogleAsync(tokenPayload.IdToken);
@@ -142,7 +144,7 @@ public class AuthController : ControllerBase
 
         if (!loginResponse.Success || loginResponse.Data == null)
         {
-            return BuildGoogleRedirectResult(effectiveRedirectUri, success: false, message: loginResponse.Message ?? "login_failed");
+            return BuildGoogleRedirectResult(effectiveRedirectUri, success: false, message: loginResponse.Message ?? MessageConstant.AuthMessage.LOGIN_FAILED);
         }
 
         var finalRedirect = QueryHelpers.AddQueryString(
@@ -170,7 +172,7 @@ public class AuthController : ControllerBase
 {
     var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
     if (string.IsNullOrEmpty(userId))
-        throw new Exception("Invalid token");
+        throw new AppException(MessageConstant.AuthMessage.INVALID_TOKEN, ErrorCodes.Unauthorized, StatusCodes.Status401Unauthorized);
 
     return await _authService.LogoutAsync(Guid.Parse(userId));
 }
@@ -181,7 +183,7 @@ public class AuthController : ControllerBase
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userId))
-            throw new Exception("Invalid token");
+            throw new AppException(MessageConstant.AuthMessage.INVALID_TOKEN, ErrorCodes.Unauthorized, StatusCodes.Status401Unauthorized);
 
         return await _authService.UpdateProfileAsync(Guid.Parse(userId), request);
     }
@@ -191,25 +193,22 @@ public class AuthController : ControllerBase
     {
         var principal = _jwtService.GetPrincipalFromExpiredToken(request.RefreshToken);
         if (principal == null)
-            throw new Exception("Invalid token");
+            throw new AppException(MessageConstant.AuthMessage.INVALID_TOKEN, ErrorCodes.Unauthorized, StatusCodes.Status401Unauthorized);
 
         var type = principal.Claims.FirstOrDefault(x => x.Type == "type")?.Value;
         if (type != "refresh")
-            throw new Exception("Invalid refresh token");
+            throw new AppException(MessageConstant.AuthMessage.INVALID_REFRESH_TOKEN, ErrorCodes.Unauthorized, StatusCodes.Status401Unauthorized);
 
         var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userId))
-            throw new Exception("Invalid token");
+            throw new AppException(MessageConstant.AuthMessage.INVALID_TOKEN, ErrorCodes.Unauthorized, StatusCodes.Status401Unauthorized);
 
         var user = await _userRepository.GetUserByIdAsync(Guid.Parse(userId));
-        if (user == null)
-            throw new Exception("User not found");
-
         if (user.RefreshToken != request.RefreshToken)
-            throw new Exception("Refresh token mismatch");
+            throw new AppException(MessageConstant.AuthMessage.REFRESH_TOKEN_MISMATCH, ErrorCodes.Unauthorized, StatusCodes.Status401Unauthorized);
 
         if (user.RefreshTokenExpiryTime == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
-            throw new Exception("Refresh token has expired");
+            throw new AppException(MessageConstant.AuthMessage.REFRESH_TOKEN_EXPIRED, ErrorCodes.Unauthorized, StatusCodes.Status401Unauthorized);
 
         var newAccessToken = _jwtService.GenerateToken(user);
         var newRefreshToken = _jwtService.GenerateRefreshToken(user);

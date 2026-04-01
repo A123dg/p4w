@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using p4w.Core.Constants;
 using p4w.Core.Interfaces.Services.Cloudinary;
 using p4w.Core.Paginations;
 
@@ -23,7 +24,7 @@ namespace p4w.Api.Controllers
                 {
                     Code = 400,
                     Success = false,
-                    Message = "No file provided",
+                    Message = MessageConstant.UploadMessage.NO_FILE_PROVIDED,
                     Data = null
                 };
 
@@ -32,7 +33,7 @@ namespace p4w.Api.Controllers
             {
                 Code = 200,
                 Success = true,
-                Message = "File uploaded successfully",
+                Message = MessageConstant.UploadMessage.FILE_UPLOADED_SUCCESS,
                 Data = media.Url
             };
 

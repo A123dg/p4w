@@ -1,6 +1,9 @@
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Http;
+using p4w.Core.Constants;
 using p4w.Core.Constants.Statuses;
 using p4w.Core.Dtos.User;
+using p4w.Core.Exceptions;
 using p4w.Core.Interfaces.Repositories.Auth;
 using p4w.Core.Interfaces.Repositories.MediaRepo;
 using p4w.Core.Models;
@@ -85,7 +88,7 @@ public class UserService : IUserService
             var exists = await _userRepository.ExistsByEmailAsync(request.Email);
             if (exists)
             {
-                throw new Exception("Email already in use");
+                throw new AppException(MessageConstant.AuthMessage.EMAIL_ALREADY_IN_USE, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
             }
 
             var user = new User
@@ -134,7 +137,7 @@ public class UserService : IUserService
             var exists = await _userRepository.ExistsByEmailAsync(request.Email, userId);
             if (exists)
             {
-                throw new Exception("Email already in use");
+                throw new AppException(MessageConstant.AuthMessage.EMAIL_ALREADY_IN_USE, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
             }
 
             user.Email = request.Email;
@@ -221,7 +224,7 @@ public class UserService : IUserService
         {
             User user = await _userRepository.GetUserByEmailAsync(userCreateDto.Email);
             if(user != null) {
-                throw new Exception("User with this email already exists");
+                throw new AppException(MessageConstant.AuthMessage.EMAIL_ALREADY_IN_USE, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
             }
             User createUser = new User
             {
@@ -241,9 +244,6 @@ public class UserService : IUserService
         public async Task UpdateUserAsync(Guid userId, UserDto userUpdateDto)
         {
             User user = await _userRepository.GetUserByIdAsync(userId);
-            if(user == null) {
-                throw new Exception("User not found");
-            }
             user.Email = userUpdateDto.Email;
             user.UserName = userUpdateDto.UserName;
             user.DateOfBirth = userUpdateDto.DateOfBirth;

@@ -38,7 +38,7 @@ namespace p4w.Api.Controllers
                 {
                     Code = 401,
                     Success = false,
-                    Message = "Unauthorized",
+                    Message = MessageConstant.CommonMessage.UNAUTHORIZED,
                     Data = null
                 };
 
@@ -47,7 +47,7 @@ namespace p4w.Api.Controllers
             {
                 Code = 200,
                 Success = true,
-                Message = "User profile retrieved successfully",
+                Message = MessageConstant.UserMessage.USER_PROFILE_RETRIEVED_SUCCESS,
                 Data = profile
             });
         }
@@ -63,7 +63,7 @@ namespace p4w.Api.Controllers
                 {
                     Code = 401,
                     Success = false,
-                    Message = "Unauthorized",
+                    Message = MessageConstant.CommonMessage.UNAUTHORIZED,
                     Data = null
                 };
 
@@ -73,8 +73,8 @@ namespace p4w.Api.Controllers
                 Code = 200,
                 Success = true,
                 Message = recentLocation == null
-                    ? "User has no recent comment or review location"
-                    : "Recent location retrieved successfully",
+                    ? MessageConstant.UserMessage.USER_RECENT_LOCATION_EMPTY
+                    : MessageConstant.UserMessage.USER_RECENT_LOCATION_RETRIEVED_SUCCESS,
                 Data = recentLocation
             });
         }
@@ -89,7 +89,7 @@ namespace p4w.Api.Controllers
             {
                 Code = 200,
                 Success = true,
-                Message = "Review created successfully",
+                Message = MessageConstant.ReviewMessage.REVIEW_CREATED_SUCCESS,
                 Data = review
             });
         }
@@ -104,7 +104,7 @@ namespace p4w.Api.Controllers
             {
                 Code = 200,
                 Success = true,
-                Message = "Comment created successfully",
+                Message = MessageConstant.CommentMessage.COMMENT_CREATED_SUCCESS,
                 Data = comment
             });
         }
@@ -118,7 +118,7 @@ namespace p4w.Api.Controllers
             {
                 Code = 200,
                 Success = true,
-                Message = "Users retrieved successfully",
+                Message = MessageConstant.UserMessage.USERS_RETRIEVED_SUCCESS,
                 Data = users.Items,
                 MetaData = users.MetaData
             });
@@ -133,7 +133,7 @@ namespace p4w.Api.Controllers
             {
                 Code = 200,
                 Success = true,
-                Message = "User retrieved successfully",
+                Message = MessageConstant.UserMessage.USER_RETRIEVED_SUCCESS,
                 Data = user
             });
         }
@@ -147,7 +147,7 @@ namespace p4w.Api.Controllers
             {
                 Code = 200,
                 Success = true,
-                Message = "User created successfully",
+                Message = MessageConstant.UserMessage.USER_CREATED_SUCCESS,
                 Data = user
             });
         }
@@ -161,7 +161,7 @@ namespace p4w.Api.Controllers
             {
                 Code = 200,
                 Success = true,
-                Message = "User updated successfully",
+                Message = MessageConstant.UserMessage.USER_UPDATED_SUCCESS,
                 Data = user
             });
         }
@@ -175,7 +175,7 @@ namespace p4w.Api.Controllers
             {
                 Code = 200,
                 Success = true,
-                Message = "User locked successfully",
+                Message = MessageConstant.UserMessage.USER_LOCKED_SUCCESS,
                 Data = user
             });
         }
@@ -188,7 +188,7 @@ namespace p4w.Api.Controllers
             {
                 Code = 200,
                 Success = true,
-                Message = "User unlocked successfully",
+                Message = MessageConstant.UserMessage.USER_UNLOCKED_SUCCESS,
                 Data = user
             });
         }
@@ -201,7 +201,7 @@ namespace p4w.Api.Controllers
 
             if (string.IsNullOrWhiteSpace(userId))
             {
-                throw new Exception("Unauthorized");
+                throw new UnauthorizedAccessException();
             }
 
             return Guid.Parse(userId);

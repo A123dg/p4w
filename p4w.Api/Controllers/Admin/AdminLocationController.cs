@@ -27,7 +27,7 @@ public class AdminLocationController : ControllerBase
         {
             Code = 200,
             Success = true,
-            Message = "Admin locations retrieved successfully",
+            Message = MessageConstant.LocationMessage.ADMIN_LOCATIONS_RETRIEVED_SUCCESS,
             Data = locations.Items,
             MetaData = locations.MetaData
         });
@@ -41,7 +41,7 @@ public class AdminLocationController : ControllerBase
         {
             Code = 200,
             Success = true,
-            Message = "Admin location detail retrieved successfully",
+            Message = MessageConstant.LocationMessage.ADMIN_LOCATION_DETAIL_RETRIEVED_SUCCESS,
             Data = location
         });
     }
@@ -54,7 +54,7 @@ public class AdminLocationController : ControllerBase
         {
             Code = 200,
             Success = true,
-            Message = "Admin location created successfully",
+            Message = MessageConstant.LocationMessage.ADMIN_LOCATION_CREATED_SUCCESS,
             Data = location
         });
     }
@@ -67,7 +67,7 @@ public class AdminLocationController : ControllerBase
         {
             Code = 200,
             Success = true,
-            Message = "Admin location updated successfully",
+            Message = MessageConstant.LocationMessage.ADMIN_LOCATION_UPDATED_SUCCESS,
             Data = location
         });
     }
@@ -80,7 +80,7 @@ public class AdminLocationController : ControllerBase
         {
             Code = 200,
             Success = true,
-            Message = "Admin location hidden successfully",
+            Message = MessageConstant.LocationMessage.ADMIN_LOCATION_HIDDEN_SUCCESS,
             Data = location
         });
     }

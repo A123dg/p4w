@@ -1,8 +1,11 @@
 using Google.Apis.Auth;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using p4w.Core.Constants;
 using p4w.Core.Constants.Statuses;
 using p4w.Core.Dtos.User;
 using p4w.Api.Dtos.Auth;
+using p4w.Core.Exceptions;
 using p4w.Core.Interfaces.Repositories.Auth;
 using p4w.Core.Interfaces.Repositories.MediaRepo;
 using p4w.Core.Interfaces.Services.Auth;
@@ -36,7 +39,7 @@ public class AuthService : IAuthService
             return new ApiResponse<LoginResponse>
             {
                 Success = false,
-                Message = "Invalid username or password",
+                Message = MessageConstant.AuthMessage.INVALID_USERNAME_OR_PASSWORD,
                 Data = null,
                 MetaData = null
             };
@@ -47,7 +50,7 @@ public class AuthService : IAuthService
             return new ApiResponse<LoginResponse>
             {
                 Success = false,
-                Message = "User is locked",
+                Message = MessageConstant.AuthMessage.USER_LOCKED,
                 Data = null,
                 MetaData = null
             };
@@ -68,7 +71,7 @@ public class AuthService : IAuthService
             return new ApiResponse<LoginResponse>
             {
                 Success = false,
-                Message = "User is locked",
+                Message = MessageConstant.AuthMessage.USER_LOCKED,
                 Data = null,
                 MetaData = null
             };
@@ -100,7 +103,7 @@ public class AuthService : IAuthService
     {
         var exists = await _userRepository.ExistsByEmailAsync(request.Email);
         if (exists)
-            throw new Exception("Email already in use");
+            throw new AppException(MessageConstant.AuthMessage.EMAIL_ALREADY_IN_USE, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
         var userId = Guid.NewGuid();
         var newUser = new User
         {
@@ -145,8 +148,6 @@ public class AuthService : IAuthService
     public async Task<ApiResponse<bool>> LogoutAsync(Guid userId)
 {
     var user = await _userRepository.GetUserByIdAsync(userId);
-    if (user == null)
-        throw new Exception("User not found");
 
     user.RefreshToken = null!;
     user.RefreshTokenExpiryTime = null;
@@ -155,7 +156,7 @@ public class AuthService : IAuthService
     return new ApiResponse<bool>
     {
         Success = true,
-        Message = "Đăng xuất thành công",
+        Message = MessageConstant.AuthMessage.LOGOUT_SUCCESS,
         Data = true
     };
 }
@@ -163,18 +164,15 @@ public class AuthService : IAuthService
     public async Task<ApiResponse<UserProfileDto>> UpdateProfileAsync(Guid userId, UpdateProfileRequest request)
     {
         var user = await _userRepository.GetUserByIdAsync(userId);
-        if (user == null)
-            throw new Exception("User not found");
-
         if (string.IsNullOrWhiteSpace(request.UserName))
-            throw new Exception("User name is required");
+            throw new AppException(MessageConstant.CommonMessage.MISSING_PARAM, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
 
         if (string.IsNullOrWhiteSpace(request.Email))
-            throw new Exception("Email is required");
+            throw new AppException(MessageConstant.CommonMessage.MISSING_PARAM, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
 
         var exists = await _userRepository.ExistsByEmailAsync(request.Email, userId);
         if (exists)
-            throw new Exception("Email already in use");
+            throw new AppException(MessageConstant.AuthMessage.EMAIL_ALREADY_IN_USE, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
 
         user.UserName = request.UserName.Trim();
         user.Email = request.Email.Trim();
@@ -251,7 +249,7 @@ public class AuthService : IAuthService
         return new ApiResponse<UserProfileDto>
         {
             Success = true,
-            Message = "Profile updated successfully",
+            Message = MessageConstant.AuthMessage.PROFILE_UPDATED_SUCCESS,
             Data = profile
         };
     }
@@ -271,7 +269,7 @@ public class AuthService : IAuthService
         return new ApiResponse<LoginResponse>
         {
             Success = true,
-            Message = "Login successful",
+            Message = MessageConstant.AuthMessage.LOGIN_SUCCESS,
             MetaData = null,
             Data = new LoginResponse
             {

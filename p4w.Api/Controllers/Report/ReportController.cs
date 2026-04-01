@@ -30,7 +30,7 @@ public class ReportController : ControllerBase
         {
             Code = 200,
             Success = true,
-            Message = "Report created successfully",
+            Message = MessageConstant.ReportMessage.REPORT_CREATED_SUCCESS,
             Data = report
         });
     }
@@ -44,7 +44,7 @@ public class ReportController : ControllerBase
         {
             Code = 200,
             Success = true,
-            Message = "Reports retrieved successfully",
+            Message = MessageConstant.ReportMessage.REPORTS_RETRIEVED_SUCCESS,
             Data = reports.Items,
             MetaData = reports.MetaData
         });
@@ -59,7 +59,7 @@ public class ReportController : ControllerBase
         {
             Code = 200,
             Success = true,
-            Message = "Report detail retrieved successfully",
+            Message = MessageConstant.ReportMessage.REPORT_DETAIL_RETRIEVED_SUCCESS,
             Data = report
         });
     }
@@ -73,7 +73,7 @@ public class ReportController : ControllerBase
         {
             Code = 200,
             Success = true,
-            Message = "Report status updated successfully",
+            Message = MessageConstant.ReportMessage.REPORT_STATUS_UPDATED_SUCCESS,
             Data = report
         });
     }

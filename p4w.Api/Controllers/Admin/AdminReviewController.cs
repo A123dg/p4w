@@ -27,7 +27,7 @@ public class AdminReviewController : ControllerBase
         {
             Code = 200,
             Success = true,
-            Message = "Admin reviews retrieved successfully",
+            Message = MessageConstant.ReviewMessage.ADMIN_REVIEWS_RETRIEVED_SUCCESS,
             Data = reviews.Items,
             MetaData = reviews.MetaData
         });
@@ -41,7 +41,7 @@ public class AdminReviewController : ControllerBase
         {
             Code = 200,
             Success = true,
-            Message = "Admin review detail retrieved successfully",
+            Message = MessageConstant.ReviewMessage.ADMIN_REVIEW_DETAIL_RETRIEVED_SUCCESS,
             Data = review
         });
     }
@@ -54,7 +54,7 @@ public class AdminReviewController : ControllerBase
         {
             Code = 200,
             Success = true,
-            Message = "Admin review status updated successfully",
+            Message = MessageConstant.ReviewMessage.ADMIN_REVIEW_STATUS_UPDATED_SUCCESS,
             Data = review
         });
     }
@@ -67,7 +67,7 @@ public class AdminReviewController : ControllerBase
         {
             Code = 200,
             Success = true,
-            Message = "Admin review hidden successfully",
+            Message = MessageConstant.ReviewMessage.ADMIN_REVIEW_HIDDEN_SUCCESS,
             Data = review
         });
     }

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using p4w.Core.Constants;
 using p4w.Core.Constants.Statuses;
 using p4w.Core.Dtos.Report;
 using p4w.Core.Exceptions;
@@ -22,24 +23,24 @@ public class ReportService : IReportService
     {
         if (string.IsNullOrWhiteSpace(request.Reason))
         {
-            throw new AppException("Reason is required", ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
+            throw new AppException(MessageConstant.ReportMessage.REASON_REQUIRED, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
         }
 
         if (string.IsNullOrWhiteSpace(request.TargetType) || !AllowedTargetTypes.Contains(request.TargetType.Trim().ToLower()))
         {
-            throw new AppException("Target type is invalid", ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
+            throw new AppException(MessageConstant.ReportMessage.TARGET_TYPE_INVALID, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
         }
 
         if (string.IsNullOrWhiteSpace(request.TargetId))
         {
-            throw new AppException("Target id is required", ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
+            throw new AppException(MessageConstant.ReportMessage.TARGET_ID_REQUIRED, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
         }
 
         var normalizedTargetType = request.TargetType.Trim().ToLower();
         var targetExists = await _reportRepository.TargetExistsAsync(normalizedTargetType, request.TargetId.Trim());
         if (!targetExists)
         {
-            throw new AppException("Reported target not found", ErrorCodes.NotFound, StatusCodes.Status404NotFound);
+            throw new AppException(MessageConstant.ReportMessage.TARGET_NOT_FOUND, ErrorCodes.NotFound, StatusCodes.Status404NotFound);
         }
 
         var report = new Core.Models.Report
@@ -67,7 +68,7 @@ public class ReportService : IReportService
         var report = await _reportRepository.GetReportDetailAsync(reportId);
         if (report == null)
         {
-            throw new AppException("Report not found", ErrorCodes.NotFound, StatusCodes.Status404NotFound);
+            throw new AppException(MessageConstant.ReportMessage.REPORT_NOT_FOUND, ErrorCodes.NotFound, StatusCodes.Status404NotFound);
         }
 
         return report;
@@ -77,13 +78,13 @@ public class ReportService : IReportService
     {
         if (request.Status is not (ReportStatuses.Pending or ReportStatuses.Approved or ReportStatuses.Rejected))
         {
-            throw new AppException("Status is invalid", ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
+            throw new AppException(MessageConstant.ReportMessage.STATUS_INVALID, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
         }
 
         var report = await _reportRepository.GetByIdAsync(reportId);
         if (report == null)
         {
-            throw new AppException("Report not found", ErrorCodes.NotFound, StatusCodes.Status404NotFound);
+            throw new AppException(MessageConstant.ReportMessage.REPORT_NOT_FOUND, ErrorCodes.NotFound, StatusCodes.Status404NotFound);
         }
 
         report.Status = request.Status;
