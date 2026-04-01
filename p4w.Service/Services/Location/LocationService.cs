@@ -450,6 +450,35 @@ public class LocationService : ILocationService
         return await GetAdminReviewDetailAsync(reviewId);
     }
 
+    public async Task<PagedResult<AdminCommentDto>> GetAdminCommentsAsync(string? search, int? status, int page, int pageSize)
+    {
+        return await _locationRepository.GetAdminCommentsAsync(search, status, page, pageSize);
+    }
+
+    public async Task<AdminCommentDto> GetAdminCommentDetailAsync(Guid commentId)
+    {
+        var comment = await _locationRepository.GetAdminCommentDetailAsync(commentId);
+        if (comment == null)
+        {
+            throw new AppException(MessageConstant.CommentMessage.COMMENT_NOT_FOUND, ErrorCodes.NotFound, StatusCodes.Status404NotFound);
+        }
+
+        return comment;
+    }
+
+    public async Task<AdminCommentDto> HideAdminCommentAsync(Guid commentId)
+    {
+        var comment = await _locationRepository.GetCommentEntityAsync(commentId);
+        if (comment == null)
+        {
+            throw new AppException(MessageConstant.CommentMessage.COMMENT_NOT_FOUND, ErrorCodes.NotFound, StatusCodes.Status404NotFound);
+        }
+
+        comment.Status = CommentStatuses.Inactive;
+        await _locationRepository.UpdateCommentAsync(comment);
+        return await GetAdminCommentDetailAsync(commentId);
+    }
+
     private static TimeSpan? ParseOperatingHours(string? value, string fieldName)
     {
         if (string.IsNullOrWhiteSpace(value))

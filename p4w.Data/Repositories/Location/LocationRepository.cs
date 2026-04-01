@@ -377,6 +377,12 @@ public class LocationRepository : ILocationRepository
         await _context.SaveChangesAsync();
     }
 
+    public async Task UpdateCommentAsync(Comment comment)
+    {
+        _context.Comments.Update(comment);
+        await _context.SaveChangesAsync();
+    }
+
     public async Task AddCommentAsync(Comment comment)
     {
         _context.Comments.Add(comment);
@@ -562,6 +568,66 @@ query = query.Where(x =>
         };
     }
 
+    public async Task<PagedResult<AdminCommentDto>> GetAdminCommentsAsync(string? search, int? status, int page, int pageSize)
+    {
+        page = page < 1 ? 1 : page;
+        pageSize = pageSize < 1 ? 10 : pageSize;
+
+        IQueryable<Comment> query = _context.Comments
+            .Include(x => x.User)
+            .Include(x => x.Review)
+                .ThenInclude(x => x.Location);
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var normalizedSearch = search.Trim();
+            query = query.Where(x =>
+                x.User.UserName.Contains(normalizedSearch) ||
+                x.Content.Contains(normalizedSearch) ||
+                x.Review.Content.Contains(normalizedSearch) ||
+                x.Review.Location.LocationName.Contains(normalizedSearch));
+        }
+
+        if (status.HasValue)
+        {
+            query = query.Where(x => x.Status == status.Value);
+        }
+
+        var total = await query.CountAsync();
+        var items = await query
+            .OrderByDescending(x => x.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(x => new AdminCommentDto
+            {
+                Id = x.Id,
+                ReviewId = x.ReviewId,
+                ParentId = x.ParentId,
+                UserId = x.UserId,
+                UserName = x.User.UserName,
+                LocationId = x.Review.LocationId,
+                LocationName = x.Review.Location.LocationName,
+                ReviewContent = x.Review.Content,
+                Content = x.Content,
+                Status = x.Status,
+                StatusName = x.Status == CommentStatuses.Active ? "active" : "inactive",
+                CreatedAt = x.CreatedAt
+            })
+            .ToListAsync();
+
+        return new PagedResult<AdminCommentDto>
+        {
+            Items = items,
+            MetaData = new MetaData
+            {
+                Page = page,
+                PageSize = pageSize,
+                Total = total,
+                TotalPage = total == 0 ? 0 : (int)Math.Ceiling(total / (double)pageSize)
+            }
+        };
+    }
+
     public async Task<AdminReviewDto?> GetAdminReviewDetailAsync(Guid reviewId)
     {
         return await _context.Reviews
@@ -579,6 +645,31 @@ query = query.Where(x =>
                 Content = x.Content,
                 Status = x.Status,
                 StatusName = x.Status == ReviewStatuses.Active ? "active" : "inactive",
+                CreatedAt = x.CreatedAt
+            })
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<AdminCommentDto?> GetAdminCommentDetailAsync(Guid commentId)
+    {
+        return await _context.Comments
+            .Include(x => x.User)
+            .Include(x => x.Review)
+                .ThenInclude(x => x.Location)
+            .Where(x => x.Id == commentId)
+            .Select(x => new AdminCommentDto
+            {
+                Id = x.Id,
+                ReviewId = x.ReviewId,
+                ParentId = x.ParentId,
+                UserId = x.UserId,
+                UserName = x.User.UserName,
+                LocationId = x.Review.LocationId,
+                LocationName = x.Review.Location.LocationName,
+                ReviewContent = x.Review.Content,
+                Content = x.Content,
+                Status = x.Status,
+                StatusName = x.Status == CommentStatuses.Active ? "active" : "inactive",
                 CreatedAt = x.CreatedAt
             })
             .FirstOrDefaultAsync();

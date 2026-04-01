@@ -24,4 +24,7 @@ public interface ILocationService
     Task<AdminReviewDto> GetAdminReviewDetailAsync(Guid reviewId);
     Task<AdminReviewDto> UpdateAdminReviewStatusAsync(Guid reviewId, AdminUpdateReviewStatusRequest request);
     Task<AdminReviewDto> HideAdminReviewAsync(Guid reviewId);
+    Task<PagedResult<AdminCommentDto>> GetAdminCommentsAsync(string? search, int? status, int page, int pageSize);
+    Task<AdminCommentDto> GetAdminCommentDetailAsync(Guid commentId);
+    Task<AdminCommentDto> HideAdminCommentAsync(Guid commentId);
 }

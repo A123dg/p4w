@@ -86,6 +86,10 @@ public static class MessageConstant
         public const string COMMENT_CREATED_SUCCESS = "Comment_000";
         public const string COMMENT_CONTENT_REQUIRED = "Comment_001";
         public const string PARENT_COMMENT_INVALID = "Comment_002";
+        public const string ADMIN_COMMENTS_RETRIEVED_SUCCESS = "Comment_003";
+        public const string ADMIN_COMMENT_DETAIL_RETRIEVED_SUCCESS = "Comment_004";
+        public const string ADMIN_COMMENT_HIDDEN_SUCCESS = "Comment_005";
+        public const string COMMENT_NOT_FOUND = "Comment_006";
     }
 
     public static class ReportMessage
