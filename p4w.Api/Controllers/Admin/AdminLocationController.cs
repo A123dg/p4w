@@ -19,6 +19,12 @@ public class AdminLocationController : ControllerBase
         _locationService = locationService;
     }
 
+    /// <summary>
+    /// Get location list for admin management.
+    /// </summary>
+    /// <remarks>
+    /// Admin only endpoint with filters for search, type, status, and pagination.
+    /// </remarks>
     [HttpGet]
     public async Task<ActionResult<ApiResponse<List<AdminLocationDto>>>> GetLocations([FromQuery] string? search, [FromQuery] int? type, [FromQuery] int? status, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
@@ -33,6 +39,12 @@ public class AdminLocationController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// Get admin detail for a location.
+    /// </summary>
+    /// <remarks>
+    /// Admin only endpoint returning full location information by locationId.
+    /// </remarks>
     [HttpGet("{locationId:guid}")]
     public async Task<ActionResult<ApiResponse<AdminLocationDto>>> GetLocationDetail(Guid locationId)
     {
@@ -46,6 +58,12 @@ public class AdminLocationController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// Create a location directly from admin panel.
+    /// </summary>
+    /// <remarks>
+    /// Admin only endpoint to create location without pending flow.
+    /// </remarks>
     [HttpPost]
     public async Task<ActionResult<ApiResponse<AdminLocationDto>>> CreateLocation([FromBody] AdminUpsertLocationRequest request)
     {
@@ -59,6 +77,12 @@ public class AdminLocationController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// Update a location directly from admin panel.
+    /// </summary>
+    /// <remarks>
+    /// Admin only endpoint for full update by locationId.
+    /// </remarks>
     [HttpPut("{locationId:guid}")]
     public async Task<ActionResult<ApiResponse<AdminLocationDto>>> UpdateLocation(Guid locationId, [FromBody] AdminUpsertLocationRequest request)
     {
@@ -72,6 +96,12 @@ public class AdminLocationController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// Hide a location from public listing.
+    /// </summary>
+    /// <remarks>
+    /// Admin only endpoint to soft-hide location by locationId.
+    /// </remarks>
     [HttpDelete("{locationId:guid}")]
     public async Task<ActionResult<ApiResponse<AdminLocationDto>>> HideLocation(Guid locationId)
     {

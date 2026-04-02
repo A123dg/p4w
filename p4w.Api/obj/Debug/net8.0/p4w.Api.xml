@@ -1,0 +1,360 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>p4w.Api</name>
+    </assembly>
+    <members>
+        <member name="M:p4w.Api.Controllers.Admin.AdminCommentController.GetComments(System.String,System.Nullable{System.Int32},System.Int32,System.Int32)">
+            <summary>
+            Get comment list for admin moderation.
+            </summary>
+            <remarks>
+            Admin only endpoint with filters for search, status, and pagination.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.Admin.AdminCommentController.GetCommentDetail(System.Guid)">
+            <summary>
+            Get comment detail for admin moderation.
+            </summary>
+            <remarks>
+            Admin only endpoint returning full comment information by commentId.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.Admin.AdminCommentController.HideComment(System.Guid)">
+            <summary>
+            Hide a comment from public listing.
+            </summary>
+            <remarks>
+            Admin only endpoint to soft-hide comment by commentId.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.Admin.AdminDashboardController.GetDashboard">
+            <summary>
+            Get aggregate dashboard metrics for admin.
+            </summary>
+            <remarks>
+            Admin only endpoint returning counts and overview statistics used by admin dashboard.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.Admin.AdminLocationController.GetLocations(System.String,System.Nullable{System.Int32},System.Nullable{System.Int32},System.Int32,System.Int32)">
+            <summary>
+            Get location list for admin management.
+            </summary>
+            <remarks>
+            Admin only endpoint with filters for search, type, status, and pagination.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.Admin.AdminLocationController.GetLocationDetail(System.Guid)">
+            <summary>
+            Get admin detail for a location.
+            </summary>
+            <remarks>
+            Admin only endpoint returning full location information by locationId.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.Admin.AdminLocationController.CreateLocation(p4w.Core.Dtos.Location.AdminUpsertLocationRequest)">
+            <summary>
+            Create a location directly from admin panel.
+            </summary>
+            <remarks>
+            Admin only endpoint to create location without pending flow.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.Admin.AdminLocationController.UpdateLocation(System.Guid,p4w.Core.Dtos.Location.AdminUpsertLocationRequest)">
+            <summary>
+            Update a location directly from admin panel.
+            </summary>
+            <remarks>
+            Admin only endpoint for full update by locationId.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.Admin.AdminLocationController.HideLocation(System.Guid)">
+            <summary>
+            Hide a location from public listing.
+            </summary>
+            <remarks>
+            Admin only endpoint to soft-hide location by locationId.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.Admin.AdminReviewController.GetReviews(System.String,System.Nullable{System.Int32},System.Nullable{System.Int32},System.Int32,System.Int32)">
+            <summary>
+            Get review list for admin moderation.
+            </summary>
+            <remarks>
+            Admin only endpoint with filters for search, status, minRating, and pagination.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.Admin.AdminReviewController.GetReviewDetail(System.Guid)">
+            <summary>
+            Get review detail for admin moderation.
+            </summary>
+            <remarks>
+            Admin only endpoint returning full review content by reviewId.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.Admin.AdminReviewController.UpdateReviewStatus(System.Guid,p4w.Core.Dtos.Review.AdminUpdateReviewStatusRequest)">
+            <summary>
+            Update moderation status of a review.
+            </summary>
+            <remarks>
+            Admin only endpoint to approve, reject, or change review visibility status.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.Admin.AdminReviewController.HideReview(System.Guid)">
+            <summary>
+            Hide a review from public listing.
+            </summary>
+            <remarks>
+            Admin only endpoint to soft-hide review by reviewId.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.Auth.AuthController.LoginAsync(p4w.Api.Dtos.Auth.LoginRequest)">
+            <summary>
+            Sign in with internal credentials (username/password).
+            </summary>
+            <remarks>
+            Returns access token and refresh token for authenticated API calls.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.Auth.AuthController.LoginWithGoogleAsync(p4w.Api.Dtos.Auth.GoogleLoginRequest)">
+            <summary>
+            Sign in with a Google ID token.
+            </summary>
+            <remarks>
+            Client submits an idToken from Google Sign-In. The API validates it and issues internal tokens.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.Auth.AuthController.GoogleLogin(System.String)">
+            <summary>
+            Redirect user to Google OAuth authorization page.
+            </summary>
+            <remarks>
+            Optional redirectUri is used to send the user back to frontend after success or failure.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.Auth.AuthController.GoogleCallbackAsync(System.String,System.String,System.String,System.String)">
+            <summary>
+            Callback endpoint to complete Google sign-in.
+            </summary>
+            <remarks>
+            Exchanges authorization code for id_token, signs in internally, then redirects to redirectUri when provided.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.Auth.AuthController.RegisterAsync(p4w.Api.Dtos.Auth.RegisterRequest)">
+            <summary>
+            Register a new account.
+            </summary>
+            <remarks>
+            Creates a new user in the system from client registration data.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.Auth.AuthController.LogoutAsync">
+            <summary>
+            Sign out the current account.
+            </summary>
+            <remarks>
+            Revokes refresh token for the currently authenticated user.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.Auth.AuthController.UpdateProfileAsync(p4w.Api.Dtos.Auth.UpdateProfileRequest)">
+            <summary>
+            Update profile for the current user.
+            </summary>
+            <remarks>
+            Requires valid JWT and only updates profile of the user in the access token.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.Auth.AuthController.RefreshTokenAsync(p4w.Api.Dtos.Auth.RefreshTokenRequest)">
+            <summary>
+            Refresh access token using refresh token.
+            </summary>
+            <remarks>
+            Validates refresh token, then issues new token pair and updates refresh token expiry.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.Location.LocationController.GetLocations(System.String,System.Nullable{System.Int32},System.Int32,System.Int32)">
+            <summary>
+            Get public location list with optional filters.
+            </summary>
+            <remarks>
+            Supports search by keyword, filter by type, and pagination via page/pageSize.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.Location.LocationController.GetLocationDetail(System.Guid)">
+            <summary>
+            Get detail of a specific location.
+            </summary>
+            <remarks>
+            Returns full location information by locationId.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.Location.LocationController.GetLocationReviews(System.Guid,System.Int32,System.Int32)">
+            <summary>
+            Get reviews of a location.
+            </summary>
+            <remarks>
+            Returns paged reviews for the selected location.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.Location.LocationController.CreateLocation(p4w.Core.Dtos.Location.CreateLocationRequest)">
+            <summary>
+            Create a new location request.
+            </summary>
+            <remarks>
+            Requires authentication. Newly created location is marked as pending approval.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.Location.LocationController.UpdateLocation(System.Guid,p4w.Core.Dtos.Location.UpdateLocationRequest)">
+            <summary>
+            Submit an update request for an existing location.
+            </summary>
+            <remarks>
+            Requires authentication. Update is submitted for approval before being published.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.Location.LocationController.CreateReview(p4w.Core.Dtos.Review.CreateReviewRequest)">
+            <summary>
+            Create a review for a location.
+            </summary>
+            <remarks>
+            Requires authentication and associates the review with the current user.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.Location.LocationController.GetReviewComments(System.Guid,System.Int32,System.Int32)">
+            <summary>
+            Get comments of a review.
+            </summary>
+            <remarks>
+            Returns paged comments for the selected reviewId.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.Location.LocationController.CreateComment(p4w.Core.Dtos.Comment.CreateCommentRequest)">
+            <summary>
+            Create a comment for a review.
+            </summary>
+            <remarks>
+            Requires authentication and links the comment to the current user.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.Report.ReportController.CreateReport(p4w.Core.Dtos.Report.CreateReportRequest)">
+            <summary>
+            Create a report for inappropriate content.
+            </summary>
+            <remarks>
+            Requires authentication. User can report a target object with reason and detail.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.Report.ReportController.GetReports(System.String,System.Nullable{System.Int32},System.String,System.Int32,System.Int32)">
+            <summary>
+            Get report list for admin moderation.
+            </summary>
+            <remarks>
+            Admin only endpoint with filters for targetType, status, search, and pagination.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.Report.ReportController.GetReportDetail(System.Guid)">
+            <summary>
+            Get detail of a report by id.
+            </summary>
+            <remarks>
+            Admin only endpoint returning report payload and moderation context.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.Report.ReportController.UpdateReportStatus(System.Guid,p4w.Core.Dtos.Report.UpdateReportStatusRequest)">
+            <summary>
+            Update moderation status of a report.
+            </summary>
+            <remarks>
+            Admin only endpoint to mark report as pending, resolved, rejected, or other configured status.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.UploadFileController.UploadImage(Microsoft.AspNetCore.Http.IFormFile)">
+            <summary>
+            Upload a single image file.
+            </summary>
+            <remarks>
+            Accepts multipart/form-data and returns uploaded media URL from Cloudinary.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.UserController.GetProfile">
+            <summary>
+            Get profile of the current user.
+            </summary>
+            <remarks>
+            Requires authentication and returns profile mapped from the current access token userId.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.UserController.GetRecentLocation">
+            <summary>
+            Get the latest location visited by the current user.
+            </summary>
+            <remarks>
+            Requires authentication and may return null data when no recent location exists.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.UserController.CreateReview(p4w.Core.Dtos.Review.CreateReviewRequest)">
+            <summary>
+            Create a review as the current user.
+            </summary>
+            <remarks>
+            Requires authentication. Review is created under the requester account.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.UserController.CreateComment(p4w.Core.Dtos.Comment.CreateCommentRequest)">
+            <summary>
+            Create a comment as the current user.
+            </summary>
+            <remarks>
+            Requires authentication. Comment is created under the requester account.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.UserController.GetUsers(System.String,System.Nullable{System.Guid},System.Nullable{System.Int32},System.Int32,System.Int32)">
+            <summary>
+            Get user list for admin management.
+            </summary>
+            <remarks>
+            Admin only. Supports filtering by search text, roleId, status, and pagination.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.UserController.GetUserById(System.Guid)">
+            <summary>
+            Get user detail by id for admin management.
+            </summary>
+            <remarks>
+            Admin only endpoint returning full user information by userId.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.UserController.CreateUser(p4w.Core.Dtos.User.AdminUpsertUserRequest)">
+            <summary>
+            Create a new user from admin panel.
+            </summary>
+            <remarks>
+            Admin only endpoint to create users with role and status settings.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.UserController.UpdateUser(System.Guid,p4w.Core.Dtos.User.AdminUpsertUserRequest)">
+            <summary>
+            Update an existing user from admin panel.
+            </summary>
+            <remarks>
+            Admin only endpoint for updating profile, role, and status data by userId.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.UserController.LockUser(System.Guid)">
+            <summary>
+            Lock a user account.
+            </summary>
+            <remarks>
+            Admin only endpoint that prevents a user from accessing the system.
+            </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.UserController.UnlockUser(System.Guid)">
+            <summary>
+            Unlock a user account.
+            </summary>
+            <remarks>
+            Admin only endpoint that restores access for a locked user.
+            </remarks>
+        </member>
+    </members>
+</doc>

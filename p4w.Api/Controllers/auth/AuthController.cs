@@ -1,4 +1,8 @@
+using System.Net.Http.Headers;
 using System.Security.Claims;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
@@ -9,10 +13,6 @@ using p4w.Core.Exceptions;
 using p4w.Core.Interfaces.Repositories.Auth;
 using p4w.Core.Interfaces.Services.Auth;
 using p4w.Core.Paginations;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace p4w.Api.Controllers.Auth;
 
@@ -40,18 +40,36 @@ public class AuthController : ControllerBase
         _httpClientFactory = httpClientFactory;
     }
 
+    /// <summary>
+    /// Sign in with internal credentials (username/password).
+    /// </summary>
+    /// <remarks>
+    /// Returns access token and refresh token for authenticated API calls.
+    /// </remarks>
     [HttpPost("admin-login")]
     public async Task<ApiResponse<LoginResponse>> LoginAsync([FromBody] LoginRequest request)
     {
         return await _authService.LoginAsync(request.UserName, request.Password);
     }
 
+    /// <summary>
+    /// Sign in with a Google ID token.
+    /// </summary>
+    /// <remarks>
+    /// Client submits an idToken from Google Sign-In. The API validates it and issues internal tokens.
+    /// </remarks>
     [HttpPost("login-google")]
     public async Task<ApiResponse<LoginResponse>> LoginWithGoogleAsync([FromBody] GoogleLoginRequest request)
     {
         return await _authService.LoginWithGoogleAsync(request.IdToken);
     }
 
+    /// <summary>
+    /// Redirect user to Google OAuth authorization page.
+    /// </summary>
+    /// <remarks>
+    /// Optional redirectUri is used to send the user back to frontend after success or failure.
+    /// </remarks>
     [HttpGet("google-login")]
     public IActionResult GoogleLogin([FromQuery] string? redirectUri = null)
     {
@@ -78,6 +96,12 @@ public class AuthController : ControllerBase
         return Redirect(authUrl);
     }
 
+    /// <summary>
+    /// Callback endpoint to complete Google sign-in.
+    /// </summary>
+    /// <remarks>
+    /// Exchanges authorization code for id_token, signs in internally, then redirects to redirectUri when provided.
+    /// </remarks>
     [HttpGet("google-callback")]
     public async Task<IActionResult> GoogleCallbackAsync([FromQuery] string? code, [FromQuery] string? error = null, [FromQuery] string? redirectUri = null, [FromQuery] string? state = null)
     {
@@ -161,54 +185,93 @@ public class AuthController : ControllerBase
         return Redirect(finalRedirect);
     }
 
+    /// <summary>
+    /// Register a new account.
+    /// </summary>
+    /// <remarks>
+    /// Creates a new user in the system from client registration data.
+    /// </remarks>
     [HttpPost("register")]
     public async Task<ApiResponse<bool>> RegisterAsync([FromBody] RegisterRequest request)
     {
         return await _authService.RegisterAsync(request);
     }
+
+    /// <summary>
+    /// Sign out the current account.
+    /// </summary>
+    /// <remarks>
+    /// Revokes refresh token for the currently authenticated user.
+    /// </remarks>
     [Authorize]
     [HttpPost("logout")]
     public async Task<ApiResponse<bool>> LogoutAsync()
-{
-    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-    if (string.IsNullOrEmpty(userId))
-        throw new AppException(MessageConstant.AuthMessage.INVALID_TOKEN, ErrorCodes.Unauthorized, StatusCodes.Status401Unauthorized);
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            throw new AppException(MessageConstant.AuthMessage.INVALID_TOKEN, ErrorCodes.Unauthorized, StatusCodes.Status401Unauthorized);
+        }
 
-    return await _authService.LogoutAsync(Guid.Parse(userId));
-}
+        return await _authService.LogoutAsync(Guid.Parse(userId));
+    }
 
+    /// <summary>
+    /// Update profile for the current user.
+    /// </summary>
+    /// <remarks>
+    /// Requires valid JWT and only updates profile of the user in the access token.
+    /// </remarks>
     [Authorize]
     [HttpPut("update-profile")]
     public async Task<ApiResponse<UserProfileDto>> UpdateProfileAsync([FromBody] UpdateProfileRequest request)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userId))
+        {
             throw new AppException(MessageConstant.AuthMessage.INVALID_TOKEN, ErrorCodes.Unauthorized, StatusCodes.Status401Unauthorized);
+        }
 
         return await _authService.UpdateProfileAsync(Guid.Parse(userId), request);
     }
 
+    /// <summary>
+    /// Refresh access token using refresh token.
+    /// </summary>
+    /// <remarks>
+    /// Validates refresh token, then issues new token pair and updates refresh token expiry.
+    /// </remarks>
     [HttpPost("refresh-token")]
     public async Task<ApiResponse<LoginResponse>> RefreshTokenAsync([FromBody] RefreshTokenRequest request)
     {
         var principal = _jwtService.GetPrincipalFromExpiredToken(request.RefreshToken);
         if (principal == null)
+        {
             throw new AppException(MessageConstant.AuthMessage.INVALID_TOKEN, ErrorCodes.Unauthorized, StatusCodes.Status401Unauthorized);
+        }
 
         var type = principal.Claims.FirstOrDefault(x => x.Type == "type")?.Value;
         if (type != "refresh")
+        {
             throw new AppException(MessageConstant.AuthMessage.INVALID_REFRESH_TOKEN, ErrorCodes.Unauthorized, StatusCodes.Status401Unauthorized);
+        }
 
         var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userId))
+        {
             throw new AppException(MessageConstant.AuthMessage.INVALID_TOKEN, ErrorCodes.Unauthorized, StatusCodes.Status401Unauthorized);
+        }
 
         var user = await _userRepository.GetUserByIdAsync(Guid.Parse(userId));
         if (user.RefreshToken != request.RefreshToken)
+        {
             throw new AppException(MessageConstant.AuthMessage.REFRESH_TOKEN_MISMATCH, ErrorCodes.Unauthorized, StatusCodes.Status401Unauthorized);
+        }
 
         if (user.RefreshTokenExpiryTime == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+        {
             throw new AppException(MessageConstant.AuthMessage.REFRESH_TOKEN_EXPIRED, ErrorCodes.Unauthorized, StatusCodes.Status401Unauthorized);
+        }
 
         var newAccessToken = _jwtService.GenerateToken(user);
         var newRefreshToken = _jwtService.GenerateRefreshToken(user);
@@ -233,29 +296,29 @@ public class AuthController : ControllerBase
         };
     }
 
-private string BuildGoogleCallbackUri()
-{
-    var callbackBaseUrl = ResolveGoogleCallbackBaseUrl();
-    return $"{callbackBaseUrl}/api/Auth/google-callback";
-}
-
-   private string ResolveGoogleCallbackBaseUrl()
-{
-    var configuredBaseUrl = _configuration["Authentication:Google:CallbackBaseUrl"]
-        ?? Environment.GetEnvironmentVariable("Authentication__Google__CallbackBaseUrl");
-
-    if (!string.IsNullOrWhiteSpace(configuredBaseUrl))
+    private string BuildGoogleCallbackUri()
     {
-        return configuredBaseUrl.TrimEnd('/');
+        var callbackBaseUrl = ResolveGoogleCallbackBaseUrl();
+        return $"{callbackBaseUrl}/api/Auth/google-callback";
     }
 
-    if (!Request.Host.HasValue)
+    private string ResolveGoogleCallbackBaseUrl()
     {
-        throw new InvalidOperationException("Cannot build Google callback URL.");
-    }
+        var configuredBaseUrl = _configuration["Authentication:Google:CallbackBaseUrl"]
+            ?? Environment.GetEnvironmentVariable("Authentication__Google__CallbackBaseUrl");
 
-    return $"https://{Request.Host}{Request.PathBase}".TrimEnd('/');
-}
+        if (!string.IsNullOrWhiteSpace(configuredBaseUrl))
+        {
+            return configuredBaseUrl.TrimEnd('/');
+        }
+
+        if (!Request.Host.HasValue)
+        {
+            throw new InvalidOperationException("Cannot build Google callback URL.");
+        }
+
+        return $"https://{Request.Host}{Request.PathBase}".TrimEnd('/');
+    }
 
     private string? ResolveGoogleRedirectUri(string? redirectUri, string? state = null)
     {

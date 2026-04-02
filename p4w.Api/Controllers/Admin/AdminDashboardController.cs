@@ -19,6 +19,12 @@ public class AdminDashboardController : ControllerBase
         _adminDashboardService = adminDashboardService;
     }
 
+    /// <summary>
+    /// Get aggregate dashboard metrics for admin.
+    /// </summary>
+    /// <remarks>
+    /// Admin only endpoint returning counts and overview statistics used by admin dashboard.
+    /// </remarks>
     [HttpGet]
     public async Task<ActionResult<ApiResponse<AdminDashboardDto>>> GetDashboard()
     {

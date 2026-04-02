@@ -16,10 +16,17 @@ namespace p4w.Api.Controllers
             _cloudinaryService = cloudinaryService;
         }
 
+        /// <summary>
+        /// Upload a single image file.
+        /// </summary>
+        /// <remarks>
+        /// Accepts multipart/form-data and returns uploaded media URL from Cloudinary.
+        /// </remarks>
         [HttpPost("image")]
         public async Task<ApiResponse<string>> UploadImage(IFormFile file)
         {
             if (file == null || file.Length == 0)
+            {
                 return new ApiResponse<string>
                 {
                     Code = 400,
@@ -27,6 +34,7 @@ namespace p4w.Api.Controllers
                     Message = MessageConstant.UploadMessage.NO_FILE_PROVIDED,
                     Data = null
                 };
+            }
 
             var media = await _cloudinaryService.UploadImageAsync(file);
             return new ApiResponse<string>
@@ -37,12 +45,12 @@ namespace p4w.Api.Controllers
                 Data = media.Url
             };
 
-        // [HttpDelete("{publicId}")]
-        // public async Task<IActionResult> DeleteImage(string publicId)
-        // {
-        //     var success = await _cloudinaryService.DeleteImageAsync(publicId);
-        //     return success ? Ok("Deleted") : BadRequest("Delete failed");
-        // }
-    }
+            // [HttpDelete("{publicId}")]
+            // public async Task<IActionResult> DeleteImage(string publicId)
+            // {
+            //     var success = await _cloudinaryService.DeleteImageAsync(publicId);
+            //     return success ? Ok("Deleted") : BadRequest("Delete failed");
+            // }
+        }
     }
 }

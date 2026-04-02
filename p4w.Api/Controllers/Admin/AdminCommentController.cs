@@ -19,6 +19,12 @@ public class AdminCommentController : ControllerBase
         _locationService = locationService;
     }
 
+    /// <summary>
+    /// Get comment list for admin moderation.
+    /// </summary>
+    /// <remarks>
+    /// Admin only endpoint with filters for search, status, and pagination.
+    /// </remarks>
     [HttpGet]
     public async Task<ActionResult<ApiResponse<List<AdminCommentDto>>>> GetComments([FromQuery] string? search, [FromQuery] int? status, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
@@ -33,6 +39,12 @@ public class AdminCommentController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// Get comment detail for admin moderation.
+    /// </summary>
+    /// <remarks>
+    /// Admin only endpoint returning full comment information by commentId.
+    /// </remarks>
     [HttpGet("{commentId:guid}")]
     public async Task<ActionResult<ApiResponse<AdminCommentDto>>> GetCommentDetail(Guid commentId)
     {
@@ -46,6 +58,12 @@ public class AdminCommentController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// Hide a comment from public listing.
+    /// </summary>
+    /// <remarks>
+    /// Admin only endpoint to soft-hide comment by commentId.
+    /// </remarks>
     [HttpDelete("{commentId:guid}")]
     public async Task<ActionResult<ApiResponse<AdminCommentDto>>> HideComment(Guid commentId)
     {

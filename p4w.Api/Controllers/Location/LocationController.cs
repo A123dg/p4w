@@ -22,6 +22,12 @@ public class LocationController : ControllerBase
         _locationService = locationService;
     }
 
+    /// <summary>
+    /// Get public location list with optional filters.
+    /// </summary>
+    /// <remarks>
+    /// Supports search by keyword, filter by type, and pagination via page/pageSize.
+    /// </remarks>
     [HttpGet]
     public async Task<ActionResult<ApiResponse<List<LocationCardDto>>>> GetLocations([FromQuery] string? search, [FromQuery] int? type, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
@@ -36,6 +42,12 @@ public class LocationController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// Get detail of a specific location.
+    /// </summary>
+    /// <remarks>
+    /// Returns full location information by locationId.
+    /// </remarks>
     [HttpGet("{locationId:guid}")]
     public async Task<ActionResult<ApiResponse<LocationDetailDto>>> GetLocationDetail(Guid locationId)
     {
@@ -49,6 +61,12 @@ public class LocationController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// Get reviews of a location.
+    /// </summary>
+    /// <remarks>
+    /// Returns paged reviews for the selected location.
+    /// </remarks>
     [HttpGet("{locationId:guid}/reviews")]
     public async Task<ActionResult<ApiResponse<List<ReviewDto>>>> GetLocationReviews(Guid locationId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
@@ -63,6 +81,12 @@ public class LocationController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// Create a new location request.
+    /// </summary>
+    /// <remarks>
+    /// Requires authentication. Newly created location is marked as pending approval.
+    /// </remarks>
     [Authorize]
     [HttpPost]
     public async Task<ActionResult<ApiResponse<AdminLocationDto>>> CreateLocation([FromBody] CreateLocationRequest request)
@@ -79,6 +103,12 @@ public class LocationController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// Submit an update request for an existing location.
+    /// </summary>
+    /// <remarks>
+    /// Requires authentication. Update is submitted for approval before being published.
+    /// </remarks>
     [Authorize]
     [HttpPut("{locationId:guid}")]
     public async Task<ActionResult<ApiResponse<AdminLocationDto>>> UpdateLocation(Guid locationId, [FromBody] UpdateLocationRequest request)
@@ -95,6 +125,12 @@ public class LocationController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// Create a review for a location.
+    /// </summary>
+    /// <remarks>
+    /// Requires authentication and associates the review with the current user.
+    /// </remarks>
     [Authorize]
     [HttpPost("reviews")]
     public async Task<ActionResult<ApiResponse<ReviewDto>>> CreateReview([FromBody] CreateReviewRequest request)
@@ -111,6 +147,12 @@ public class LocationController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// Get comments of a review.
+    /// </summary>
+    /// <remarks>
+    /// Returns paged comments for the selected reviewId.
+    /// </remarks>
     [HttpGet("reviews/{reviewId:guid}/comments")]
     public async Task<ActionResult<ApiResponse<List<CommentDto>>>> GetReviewComments(Guid reviewId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
@@ -125,6 +167,12 @@ public class LocationController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// Create a comment for a review.
+    /// </summary>
+    /// <remarks>
+    /// Requires authentication and links the comment to the current user.
+    /// </remarks>
     [Authorize]
     [HttpPost("comments")]
     public async Task<ActionResult<ApiResponse<CommentDto>>> CreateComment([FromBody] CreateCommentRequest request)

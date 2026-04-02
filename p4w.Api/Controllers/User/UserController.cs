@@ -27,6 +27,12 @@ namespace p4w.Api.Controllers
             _locationService = locationService;
         }
 
+        /// <summary>
+        /// Get profile of the current user.
+        /// </summary>
+        /// <remarks>
+        /// Requires authentication and returns profile mapped from the current access token userId.
+        /// </remarks>
         [HttpGet("profile")]
         public async Task<ActionResult<ApiResponse<UserProfileDto>>> GetProfile()
         {
@@ -52,6 +58,12 @@ namespace p4w.Api.Controllers
             });
         }
 
+        /// <summary>
+        /// Get the latest location visited by the current user.
+        /// </summary>
+        /// <remarks>
+        /// Requires authentication and may return null data when no recent location exists.
+        /// </remarks>
         [HttpGet("recent-location")]
         public async Task<ActionResult<ApiResponse<RecentLocationDto>>> GetRecentLocation()
         {
@@ -79,6 +91,12 @@ namespace p4w.Api.Controllers
             });
         }
 
+        /// <summary>
+        /// Create a review as the current user.
+        /// </summary>
+        /// <remarks>
+        /// Requires authentication. Review is created under the requester account.
+        /// </remarks>
         [HttpPost("reviews")]
         public async Task<ActionResult<ApiResponse<ReviewDto>>> CreateReview([FromBody] CreateReviewRequest request)
         {
@@ -94,6 +112,12 @@ namespace p4w.Api.Controllers
             });
         }
 
+        /// <summary>
+        /// Create a comment as the current user.
+        /// </summary>
+        /// <remarks>
+        /// Requires authentication. Comment is created under the requester account.
+        /// </remarks>
         [HttpPost("comments")]
         public async Task<ActionResult<ApiResponse<CommentDto>>> CreateComment([FromBody] CreateCommentRequest request)
         {
@@ -109,6 +133,12 @@ namespace p4w.Api.Controllers
             });
         }
 
+        /// <summary>
+        /// Get user list for admin management.
+        /// </summary>
+        /// <remarks>
+        /// Admin only. Supports filtering by search text, roleId, status, and pagination.
+        /// </remarks>
         [Authorize(Policy = AuthPolicies.AdminOnly)]
         [HttpGet]
         public async Task<ActionResult<ApiResponse<List<UserResponseDto>>>> GetUsers([FromQuery] string? search, [FromQuery] Guid? roleId, [FromQuery] int? status, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
@@ -124,6 +154,12 @@ namespace p4w.Api.Controllers
             });
         }
 
+        /// <summary>
+        /// Get user detail by id for admin management.
+        /// </summary>
+        /// <remarks>
+        /// Admin only endpoint returning full user information by userId.
+        /// </remarks>
         [Authorize(Policy = AuthPolicies.AdminOnly)]
         [HttpGet("{userId:guid}")]
         public async Task<ActionResult<ApiResponse<UserResponseDto>>> GetUserById(Guid userId)
@@ -138,6 +174,12 @@ namespace p4w.Api.Controllers
             });
         }
 
+        /// <summary>
+        /// Create a new user from admin panel.
+        /// </summary>
+        /// <remarks>
+        /// Admin only endpoint to create users with role and status settings.
+        /// </remarks>
         [Authorize(Policy = AuthPolicies.AdminOnly)]
         [HttpPost]
         public async Task<ActionResult<ApiResponse<UserResponseDto>>> CreateUser([FromBody] AdminUpsertUserRequest request)
@@ -152,6 +194,12 @@ namespace p4w.Api.Controllers
             });
         }
 
+        /// <summary>
+        /// Update an existing user from admin panel.
+        /// </summary>
+        /// <remarks>
+        /// Admin only endpoint for updating profile, role, and status data by userId.
+        /// </remarks>
         [Authorize(Policy = AuthPolicies.AdminOnly)]
         [HttpPut("{userId:guid}")]
         public async Task<ActionResult<ApiResponse<UserResponseDto>>> UpdateUser(Guid userId, [FromBody] AdminUpsertUserRequest request)
@@ -166,6 +214,12 @@ namespace p4w.Api.Controllers
             });
         }
 
+        /// <summary>
+        /// Lock a user account.
+        /// </summary>
+        /// <remarks>
+        /// Admin only endpoint that prevents a user from accessing the system.
+        /// </remarks>
         [Authorize(Policy = AuthPolicies.AdminOnly)]
         [HttpPut("{userId:guid}/lock")]
         public async Task<ActionResult<ApiResponse<UserResponseDto>>> LockUser(Guid userId)
@@ -179,6 +233,13 @@ namespace p4w.Api.Controllers
                 Data = user
             });
         }
+
+        /// <summary>
+        /// Unlock a user account.
+        /// </summary>
+        /// <remarks>
+        /// Admin only endpoint that restores access for a locked user.
+        /// </remarks>
         [Authorize (Policy = AuthPolicies.AdminOnly)]
         [HttpPut("{userId:guid}/unlock")]
         public async Task<ActionResult<ApiResponse<UserResponseDto>>> UnlockUser(Guid userId)

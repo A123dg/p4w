@@ -1,11 +1,11 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using p4w.Core.Constants;
 using p4w.Core.Dtos.Report;
 using p4w.Core.Interfaces.Services.Report;
 using p4w.Core.Paginations;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 
 namespace p4w.Api.Controllers.Report;
 
@@ -20,6 +20,12 @@ public class ReportController : ControllerBase
         _reportService = reportService;
     }
 
+    /// <summary>
+    /// Create a report for inappropriate content.
+    /// </summary>
+    /// <remarks>
+    /// Requires authentication. User can report a target object with reason and detail.
+    /// </remarks>
     [Authorize]
     [HttpPost]
     public async Task<ActionResult<ApiResponse<ReportDto>>> CreateReport([FromBody] CreateReportRequest request)
@@ -35,6 +41,12 @@ public class ReportController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// Get report list for admin moderation.
+    /// </summary>
+    /// <remarks>
+    /// Admin only endpoint with filters for targetType, status, search, and pagination.
+    /// </remarks>
     [Authorize(Policy = AuthPolicies.AdminOnly)]
     [HttpGet]
     public async Task<ActionResult<ApiResponse<List<ReportDto>>>> GetReports([FromQuery] string? targetType, [FromQuery] int? status, [FromQuery] string? search, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
@@ -50,6 +62,12 @@ public class ReportController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// Get detail of a report by id.
+    /// </summary>
+    /// <remarks>
+    /// Admin only endpoint returning report payload and moderation context.
+    /// </remarks>
     [Authorize(Policy = AuthPolicies.AdminOnly)]
     [HttpGet("{reportId:guid}")]
     public async Task<ActionResult<ApiResponse<ReportDto>>> GetReportDetail(Guid reportId)
@@ -64,6 +82,12 @@ public class ReportController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// Update moderation status of a report.
+    /// </summary>
+    /// <remarks>
+    /// Admin only endpoint to mark report as pending, resolved, rejected, or other configured status.
+    /// </remarks>
     [Authorize(Policy = AuthPolicies.AdminOnly)]
     [HttpPut("{reportId:guid}/status")]
     public async Task<ActionResult<ApiResponse<ReportDto>>> UpdateReportStatus(Guid reportId, [FromBody] UpdateReportStatusRequest request)

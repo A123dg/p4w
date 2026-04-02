@@ -19,6 +19,12 @@ public class AdminReviewController : ControllerBase
         _locationService = locationService;
     }
 
+    /// <summary>
+    /// Get review list for admin moderation.
+    /// </summary>
+    /// <remarks>
+    /// Admin only endpoint with filters for search, status, minRating, and pagination.
+    /// </remarks>
     [HttpGet]
     public async Task<ActionResult<ApiResponse<List<AdminReviewDto>>>> GetReviews([FromQuery] string? search, [FromQuery] int? status, [FromQuery] int? minRating, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
@@ -33,6 +39,12 @@ public class AdminReviewController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// Get review detail for admin moderation.
+    /// </summary>
+    /// <remarks>
+    /// Admin only endpoint returning full review content by reviewId.
+    /// </remarks>
     [HttpGet("{reviewId:guid}")]
     public async Task<ActionResult<ApiResponse<AdminReviewDto>>> GetReviewDetail(Guid reviewId)
     {
@@ -46,6 +58,12 @@ public class AdminReviewController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// Update moderation status of a review.
+    /// </summary>
+    /// <remarks>
+    /// Admin only endpoint to approve, reject, or change review visibility status.
+    /// </remarks>
     [HttpPut("{reviewId:guid}/status")]
     public async Task<ActionResult<ApiResponse<AdminReviewDto>>> UpdateReviewStatus(Guid reviewId, [FromBody] AdminUpdateReviewStatusRequest request)
     {
@@ -59,6 +77,12 @@ public class AdminReviewController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// Hide a review from public listing.
+    /// </summary>
+    /// <remarks>
+    /// Admin only endpoint to soft-hide review by reviewId.
+    /// </remarks>
     [HttpDelete("{reviewId:guid}")]
     public async Task<ActionResult<ApiResponse<AdminReviewDto>>> HideReview(Guid reviewId)
     {
