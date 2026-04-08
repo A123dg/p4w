@@ -32,11 +32,14 @@ public class LocationRepository : ILocationRepository
         IQueryable<Core.Models.Location> query = _context.Locations
             .Include(x => x.Reviews)
             .Where(x => x.Status == LocationStatuses.Active);
+        var normalizedSearch = string.IsNullOrWhiteSpace(search) ? null : search.Trim();
 
-        if (!string.IsNullOrWhiteSpace(search))
+        if (normalizedSearch != null)
         {
-            var normalizedSearch = search.Trim();
-            query = query.Where(x => x.LocationName.Contains(normalizedSearch) || x.Address.Contains(normalizedSearch));
+            query = query.Where(x =>
+                EF.Functions.Collate(x.LocationName, "Latin1_General_CI_AI").Contains(normalizedSearch) ||
+                EF.Functions.Collate(x.Address, "Latin1_General_CI_AI").Contains(normalizedSearch) ||
+                EF.Functions.Collate(x.Description ?? string.Empty, "Latin1_General_CI_AI").Contains(normalizedSearch));
         }
 
         if (type.HasValue)
@@ -45,8 +48,15 @@ public class LocationRepository : ILocationRepository
         }
 
         var total = await query.CountAsync();
-        var items = await query
-            .OrderByDescending(x => x.Reviews.Where(r => r.Status == ReviewStatuses.Active).Any() ? x.Reviews.Where(r => r.Status == ReviewStatuses.Active).Max(r => r.CreatedAt) : DateTime.MinValue)
+        var sortedQuery = normalizedSearch == null
+            ? query.OrderByDescending(x => x.Reviews.Where(r => r.Status == ReviewStatuses.Active).Any() ? x.Reviews.Where(r => r.Status == ReviewStatuses.Active).Max(r => r.CreatedAt) : DateTime.MinValue)
+            : query
+                .OrderBy(x => EF.Functions.Collate(x.LocationName, "Latin1_General_CI_AI").Contains(normalizedSearch) ? 0 : 1)
+                .ThenBy(x => EF.Functions.Collate(x.Address, "Latin1_General_CI_AI").Contains(normalizedSearch) ? 0 : 1)
+                .ThenBy(x => EF.Functions.Collate(x.Description ?? string.Empty, "Latin1_General_CI_AI").Contains(normalizedSearch) ? 0 : 1)
+                .ThenByDescending(x => x.Reviews.Where(r => r.Status == ReviewStatuses.Active).Any() ? x.Reviews.Where(r => r.Status == ReviewStatuses.Active).Max(r => r.CreatedAt) : DateTime.MinValue);
+
+        var items = await sortedQuery
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Select(x => new LocationCardDto
@@ -431,13 +441,15 @@ public class LocationRepository : ILocationRepository
 
         IQueryable<Core.Models.Location> query = _context.Locations
             .Include(x => x.Owner);
+        var normalizedSearch = string.IsNullOrWhiteSpace(search) ? null : search.Trim();
 
-        if (!string.IsNullOrWhiteSpace(search))
+        if (normalizedSearch != null)
         {
-            var normalizedSearch = search.Trim();
-query = query.Where(x => 
-    EF.Functions.Collate(x.LocationName, "Latin1_General_CI_AI").Contains(normalizedSearch) || 
-    EF.Functions.Collate(x.Address, "Latin1_General_CI_AI").Contains(normalizedSearch));        }
+            query = query.Where(x =>
+                EF.Functions.Collate(x.LocationName, "Latin1_General_CI_AI").Contains(normalizedSearch) ||
+                EF.Functions.Collate(x.Address, "Latin1_General_CI_AI").Contains(normalizedSearch) ||
+                EF.Functions.Collate(x.Description ?? string.Empty, "Latin1_General_CI_AI").Contains(normalizedSearch));
+        }
 
         if (type.HasValue)
         {
@@ -450,8 +462,15 @@ query = query.Where(x =>
         }
 
         var total = await query.CountAsync();
-        var items = await query
-            .OrderByDescending(x => x.Id)
+        var sortedQuery = normalizedSearch == null
+            ? query.OrderByDescending(x => x.Id)
+            : query
+                .OrderBy(x => EF.Functions.Collate(x.LocationName, "Latin1_General_CI_AI").Contains(normalizedSearch) ? 0 : 1)
+                .ThenBy(x => EF.Functions.Collate(x.Address, "Latin1_General_CI_AI").Contains(normalizedSearch) ? 0 : 1)
+                .ThenBy(x => EF.Functions.Collate(x.Description ?? string.Empty, "Latin1_General_CI_AI").Contains(normalizedSearch) ? 0 : 1)
+                .ThenByDescending(x => x.Id);
+
+        var items = await sortedQuery
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Select(x => new AdminLocationDto

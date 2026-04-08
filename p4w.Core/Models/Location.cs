@@ -20,6 +20,7 @@ namespace p4w.Core.Models
         public TimeSpan? ClosingHours { get; set; }
         public int Type { get; set; }
         public int Status { get; set; }
+        public DateTime CreatedAt { get; set; }
         public bool HasPendingUpdate { get; set; }
         public string? PendingLocationName { get; set; }
         public string? PendingDescription { get; set; }

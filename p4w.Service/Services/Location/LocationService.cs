@@ -76,6 +76,7 @@ public class LocationService : ILocationService
             OpeningHours = openingHours,
             ClosingHours = closingHours,
             Type = request.Type,
+            CreatedAt = DateTime.UtcNow,
             Status = LocationStatuses.Pending
         };
 
@@ -299,6 +300,7 @@ public class LocationService : ILocationService
             OpeningHours = openingHours,
             ClosingHours = closingHours,
             Type = request.Type.Value,
+            CreatedAt = DateTime.UtcNow,
             Status = request.Status.Value
         };
 

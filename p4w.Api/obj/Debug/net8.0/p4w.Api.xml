@@ -28,7 +28,7 @@
             Admin only endpoint to soft-hide comment by commentId.
             </remarks>
         </member>
-        <member name="M:p4w.Api.Controllers.Admin.AdminDashboardController.GetDashboard">
+        <member name="M:p4w.Api.Controllers.Admin.AdminDashboardController.GetDashboard(System.String)">
             <summary>
             Get aggregate dashboard metrics for admin.
             </summary>

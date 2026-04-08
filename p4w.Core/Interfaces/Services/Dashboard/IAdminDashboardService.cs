@@ -4,5 +4,5 @@ namespace p4w.Core.Interfaces.Services.Dashboard;
 
 public interface IAdminDashboardService
 {
-    Task<AdminDashboardDto> GetDashboardAsync();
+    Task<AdminDashboardDto> GetDashboardAsync(string? period);
 }
