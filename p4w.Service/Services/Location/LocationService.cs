@@ -87,9 +87,6 @@ public class LocationService : ILocationService
 
     public async Task<AdminLocationDto> RequestLocationUpdateAsync(Guid userId, Guid locationId, UpdateLocationRequest request)
     {
-        var openingHours = ParseOperatingHours(request.OpeningHours, nameof(request.OpeningHours));
-        var closingHours = ParseOperatingHours(request.ClosingHours, nameof(request.ClosingHours));
-
         var entity = await _locationRepository.GetLocationEntityForAdminAsync(locationId);
         if (entity == null)
         {
@@ -101,10 +98,42 @@ public class LocationService : ILocationService
             throw new AppException(MessageConstant.LocationMessage.LOCATION_UPDATE_ACCESS_DENIED, ErrorCodes.Forbidden, StatusCodes.Status403Forbidden);
         }
 
+        if (request.Status.HasValue && request.Status.Value != LocationStatuses.Inactive)
+        {
+            throw new AppException(MessageConstant.LocationMessage.LOCATION_STATUS_INVALID, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
+        }
+
+        if (request.Status == LocationStatuses.Inactive)
+        {
+            entity.Status = LocationStatuses.Inactive;
+            ClearPendingUpdate(entity);
+            await _locationRepository.UpdateLocationAsync(entity);
+            await _locationRepository.ClearLocationMediaAsync(entity.Id, "location-pending");
+            return await GetAdminLocationDetailAsync(entity.Id);
+        }
+
         if (entity.Status == LocationStatuses.Inactive)
         {
             throw new AppException(MessageConstant.LocationMessage.INACTIVE_LOCATION_CANNOT_BE_UPDATED, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
         }
+
+        if (string.IsNullOrWhiteSpace(request.LocationName))
+        {
+            throw new AppException(MessageConstant.LocationMessage.LOCATION_NAME_REQUIRED, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Address))
+        {
+            throw new AppException(MessageConstant.LocationMessage.ADDRESS_REQUIRED, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
+        }
+
+        if (!request.Type.HasValue)
+        {
+            throw new AppException(MessageConstant.LocationMessage.TYPE_REQUIRED, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
+        }
+
+        var openingHours = ParseOperatingHours(request.OpeningHours, nameof(request.OpeningHours));
+        var closingHours = ParseOperatingHours(request.ClosingHours, nameof(request.ClosingHours));
 
         if (entity.Status == LocationStatuses.Pending)
         {
@@ -114,7 +143,7 @@ public class LocationService : ILocationService
             entity.AddressLink = string.IsNullOrWhiteSpace(request.AddressLink) ? null : request.AddressLink.Trim();
             entity.OpeningHours = openingHours;
             entity.ClosingHours = closingHours;
-            entity.Type = request.Type;
+            entity.Type = request.Type.Value;
 
             await _locationRepository.UpdateLocationAsync(entity);
             await _locationRepository.ReplaceLocationMediaAsync(userId, entity.Id, request.MediaLinkUrls, "location");
@@ -128,7 +157,7 @@ public class LocationService : ILocationService
         entity.PendingAddressLink = string.IsNullOrWhiteSpace(request.AddressLink) ? null : request.AddressLink.Trim();
         entity.PendingOpeningHours = openingHours;
         entity.PendingClosingHours = closingHours;
-        entity.PendingType = request.Type;
+        entity.PendingType = request.Type.Value;
         entity.PendingUpdatedAt = DateTime.UtcNow;
 
         await _locationRepository.UpdateLocationAsync(entity);
