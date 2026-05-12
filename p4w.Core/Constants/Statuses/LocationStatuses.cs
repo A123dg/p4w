@@ -7,4 +7,5 @@ public static class LocationStatuses
     public const int Approved = 2;
     public const int Locked = 3;
     public const int Active = 4;
+    public const int Rejected = 5;
 }

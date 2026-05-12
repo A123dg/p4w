@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("p4w.Service")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f82fc6f5ce6e78ab6046fed5c46fb18e4f910cee")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0b5176e2fdf6438db1c9f1bb6cda9317c95ac418")]
 [assembly: System.Reflection.AssemblyProductAttribute("p4w.Service")]
 [assembly: System.Reflection.AssemblyTitleAttribute("p4w.Service")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
