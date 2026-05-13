@@ -303,22 +303,9 @@ public class AuthController : ControllerBase
     }
 
     private string ResolveGoogleCallbackBaseUrl()
-    {
-        var configuredBaseUrl = _configuration["Authentication:Google:CallbackBaseUrl"]
-            ?? Environment.GetEnvironmentVariable("Authentication__Google__CallbackBaseUrl");
-
-        if (!string.IsNullOrWhiteSpace(configuredBaseUrl))
-        {
-            return configuredBaseUrl.TrimEnd('/');
-        }
-
-        if (!Request.Host.HasValue)
-        {
-            throw new InvalidOperationException("Cannot build Google callback URL.");
-        }
-
-        return $"https://{Request.Host}{Request.PathBase}".TrimEnd('/');
-    }
+{
+    return "https://p4w-production-2371.up.railway.app";
+}
 
     private string? ResolveGoogleRedirectUri(string? redirectUri, string? state = null)
     {
