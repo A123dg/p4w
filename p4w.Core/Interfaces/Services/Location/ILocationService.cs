@@ -9,6 +9,7 @@ public interface ILocationService
 {
     Task<PagedResult<LocationCardDto>> GetLocationsAsync(string? search, int? type, int page, int pageSize);
     Task<LocationDetailDto> GetLocationDetailAsync(Guid locationId);
+    Task<LocationDetailDto?> GetLocationDetailForOwnerAsync(Guid locationId);
     Task<PagedResult<ReviewDto>> GetLocationReviewsAsync(Guid locationId, int page, int pageSize);
     Task<PagedResult<CommentDto>> GetReviewCommentsAsync(Guid reviewId, int page, int pageSize);
     Task<AdminLocationDto> CreateLocationAsync(Guid userId, CreateLocationRequest request);
@@ -16,6 +17,7 @@ public interface ILocationService
     Task<ReviewDto> CreateReviewAsync(Guid userId, CreateReviewRequest request);
     Task<CommentDto> CreateCommentAsync(Guid userId, CreateCommentRequest request);
     Task<PagedResult<AdminLocationDto>> GetAdminLocationsAsync(string? search, int? type, int? status, int page, int pageSize);
+    Task<PagedResult<AdminLocationDto>> GetOwnerLocationsAsync(Guid ownerId, int page, int pageSize);
     Task<AdminLocationDto> GetAdminLocationDetailAsync(Guid locationId);
     Task<AdminLocationDto> CreateAdminLocationAsync(AdminUpsertLocationRequest request);
     Task<AdminLocationDto> UpdateAdminLocationAsync(Guid locationId, AdminUpsertLocationRequest request);

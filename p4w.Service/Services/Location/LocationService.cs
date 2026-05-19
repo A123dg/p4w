@@ -38,6 +38,11 @@ public class LocationService : ILocationService
         return location;
     }
 
+    public async Task<LocationDetailDto?> GetLocationDetailForOwnerAsync(Guid locationId)
+    {
+        return await _locationRepository.GetLocationDetailForAdminAsync(locationId);
+    }
+
     public async Task<PagedResult<ReviewDto>> GetLocationReviewsAsync(Guid locationId, int page, int pageSize)
     {
         var location = await _locationRepository.GetLocationEntityAsync(locationId);
@@ -275,6 +280,11 @@ public class LocationService : ILocationService
     public async Task<PagedResult<AdminLocationDto>> GetAdminLocationsAsync(string? search, int? type, int? status, int page, int pageSize)
     {
         return await _locationRepository.GetAdminLocationsAsync(search, type, status, page, pageSize);
+    }
+
+    public async Task<PagedResult<AdminLocationDto>> GetOwnerLocationsAsync(Guid ownerId, int page, int pageSize)
+    {
+        return await _locationRepository.GetAdminLocationsByOwnerAsync(ownerId, page, pageSize);
     }
 
     public async Task<AdminLocationDto> GetAdminLocationDetailAsync(Guid locationId)

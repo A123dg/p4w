@@ -51,14 +51,56 @@ public class LocationController : ControllerBase
     [HttpGet("{locationId:guid}")]
     public async Task<ActionResult<ApiResponse<LocationDetailDto>>> GetLocationDetail(Guid locationId)
     {
-        var location = await _locationService.GetLocationDetailAsync(locationId);
-        return Ok(new ApiResponse<LocationDetailDto>
+        try
         {
-            Code = 200,
-            Success = true,
-            Message = MessageConstant.LocationMessage.LOCATION_DETAIL_RETRIEVED_SUCCESS,
-            Data = location
-        });
+            var location = await _locationService.GetLocationDetailAsync(locationId);
+            return Ok(new ApiResponse<LocationDetailDto>
+            {
+                Code = 200,
+                Success = true,
+                Message = MessageConstant.LocationMessage.LOCATION_DETAIL_RETRIEVED_SUCCESS,
+                Data = location
+            });
+        }
+        catch (p4w.Core.Exceptions.AppException ex) when (ex.ErrorCode == p4w.Core.Exceptions.ErrorCodes.NotFound)
+        {
+            // If not found for public (likely inactive), allow owner to view regardless of status
+            if (!User.Identity?.IsAuthenticated ?? true)
+            {
+                throw;
+            }
+
+            Guid userId;
+            try
+            {
+                userId = GetCurrentUserId();
+            }
+            catch
+            {
+                throw;
+            }
+
+            // Verify ownership
+            var adminLocation = await _locationService.GetAdminLocationDetailAsync(locationId);
+            if (adminLocation.OwnerId != userId)
+            {
+                throw;
+            }
+
+            var ownerDetail = await _locationService.GetLocationDetailForOwnerAsync(locationId);
+            if (ownerDetail == null)
+            {
+                throw new p4w.Core.Exceptions.AppException(MessageConstant.LocationMessage.LOCATION_NOT_FOUND, p4w.Core.Exceptions.ErrorCodes.NotFound, StatusCodes.Status404NotFound);
+            }
+
+            return Ok(new ApiResponse<LocationDetailDto>
+            {
+                Code = 200,
+                Success = true,
+                Message = MessageConstant.LocationMessage.LOCATION_DETAIL_RETRIEVED_SUCCESS,
+                Data = ownerDetail
+            });
+        }
     }
 
     /// <summary>
@@ -78,6 +120,54 @@ public class LocationController : ControllerBase
             Message = MessageConstant.LocationMessage.LOCATION_REVIEWS_RETRIEVED_SUCCESS,
             Data = reviews.Items,
             MetaData = reviews.MetaData
+        });
+    }
+
+    /// <summary>
+    /// If the current user is the owner of the specified location, return all locations owned by that user including statuses.
+    /// </summary>
+    [Authorize]
+    [HttpGet("{locationId:guid}/owner-locations")]
+    public async Task<ActionResult<ApiResponse<List<AdminLocationDto>>>> GetOwnerLocationsIfOwner(Guid locationId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    {
+        var userId = GetCurrentUserId();
+        var locationDetail = await _locationService.GetAdminLocationDetailAsync(locationId);
+        if (locationDetail.OwnerId != userId)
+        {
+            return Forbid();
+        }
+
+        var locations = await _locationService.GetOwnerLocationsAsync(userId, page, pageSize);
+        return Ok(new ApiResponse<List<AdminLocationDto>>
+        {
+            Code = 200,
+            Success = true,
+            Message = MessageConstant.LocationMessage.LOCATIONS_RETRIEVED_SUCCESS,
+            Data = locations.Items,
+            MetaData = locations.MetaData
+        });
+    }
+
+    /// <summary>
+    /// If the current user is the owner of the specified location, return the admin detail of that location (includes status).
+    /// </summary>
+    [Authorize]
+    [HttpGet("{locationId:guid}/owner-detail")]
+    public async Task<ActionResult<ApiResponse<AdminLocationDto>>> GetOwnerLocationDetail(Guid locationId)
+    {
+        var userId = GetCurrentUserId();
+        var location = await _locationService.GetAdminLocationDetailAsync(locationId);
+        if (location.OwnerId != userId)
+        {
+            return Forbid();
+        }
+
+        return Ok(new ApiResponse<AdminLocationDto>
+        {
+            Code = 200,
+            Success = true,
+            Message = MessageConstant.LocationMessage.LOCATION_DETAIL_RETRIEVED_SUCCESS,
+            Data = location
         });
     }
 

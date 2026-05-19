@@ -12,6 +12,7 @@ public interface ILocationRepository
 {
     Task<PagedResult<LocationCardDto>> GetLocationsAsync(string? search, int? type, int page, int pageSize);
     Task<LocationDetailDto?> GetLocationDetailAsync(Guid locationId);
+    Task<LocationDetailDto?> GetLocationDetailForAdminAsync(Guid locationId);
     Task<PagedResult<ReviewDto>> GetLocationReviewsAsync(Guid locationId, int page, int pageSize);
     Task<PagedResult<CommentDto>> GetReviewCommentsAsync(Guid reviewId, int page, int pageSize);
     Task<CommentDto?> GetCommentDetailAsync(Guid commentId);
@@ -27,6 +28,7 @@ public interface ILocationRepository
     Task AddCommentMediaAsync(Guid userId, Guid commentId, string? mediaLinkUrl);
     Task UpdateCommentAsync(Comment comment);
     Task<PagedResult<AdminLocationDto>> GetAdminLocationsAsync(string? search, int? type, int? status, int page, int pageSize);
+    Task<PagedResult<AdminLocationDto>> GetAdminLocationsByOwnerAsync(Guid ownerId, int page, int pageSize);
     Task<PagedResult<AdminReviewDto>> GetAdminReviewsAsync(string? search, int? status, int? minRating, int page, int pageSize);
     Task<PagedResult<AdminCommentDto>> GetAdminCommentsAsync(string? search, int? status, int page, int pageSize);
     Task<AdminLocationDto?> GetAdminLocationDetailAsync(Guid locationId);

@@ -153,6 +153,67 @@ public class LocationRepository : ILocationRepository
         };
     }
 
+    public async Task<LocationDetailDto?> GetLocationDetailForAdminAsync(Guid locationId)
+    {
+        var location = await _context.Locations
+            .Include(x => x.Reviews)
+                .ThenInclude(x => x.Comments)
+            .Include(x => x.Reviews)
+                .ThenInclude(x => x.User)
+                    .ThenInclude(x => x.MediaLinks)
+                        .ThenInclude(x => x.Media)
+            .FirstOrDefaultAsync(x => x.Id == locationId);
+
+        if (location == null)
+        {
+            return null;
+        }
+
+        return new LocationDetailDto
+        {
+            Id = location.Id,
+            LocationName = location.LocationName,
+            Description = location.Description,
+            Address = location.Address,
+            AddressLink = location.AddressLink,
+            MediaLinkUrls = await _context.MediaLinks
+                .Where(m => m.EntityType == LocationMediaEntityType && m.EntityId == location.Id)
+                .OrderBy(m => m.SortOrder)
+                .Select(m => m.Media.Url)
+                .ToListAsync(),
+            Type = location.Type,
+            OpeningHours = location.OpeningHours.HasValue ? location.OpeningHours.Value.ToString(@"hh\:mm\:ss") : null,
+            ClosingHours = location.ClosingHours.HasValue ? location.ClosingHours.Value.ToString(@"hh\:mm\:ss") : null,
+            AverageRating = location.Reviews.Where(x => x.Status == ReviewStatuses.Active).Any() ? Math.Round(location.Reviews.Where(x => x.Status == ReviewStatuses.Active).Average(r => r.Rating), 1) : 0,
+            ReviewCount = location.Reviews.Count(x => x.Status == ReviewStatuses.Active),
+            RecentReviews = location.Reviews
+                .Where(x => x.Status == ReviewStatuses.Active)
+                .OrderByDescending(x => x.CreatedAt)
+                .Take(5)
+                .Select(x => new ReviewDto
+                {
+                    Id = x.Id,
+                    UserId = x.UserId,
+                    UserName = x.User.UserName ?? x.User.Email ?? UnknownUserName,
+                    AvatarUrl = x.User.MediaLinks
+                        .Where(m => m.EntityType == "avatar")
+                        .OrderBy(m => m.SortOrder)
+                        .Select(m => m.Media.Url)
+                        .FirstOrDefault() ?? string.Empty,
+                    Rating = x.Rating,
+                    Content = x.Content,
+                    CreatedAt = x.CreatedAt,
+                    CommentCount = x.Comments.Count(c => c.Status == CommentStatuses.Active),
+                    MediaLinkUrls = _context.MediaLinks
+                        .Where(m => m.EntityType == ReviewMediaEntityType && m.EntityId == x.Id)
+                        .OrderBy(m => m.SortOrder)
+                        .Select(m => m.Media.Url)
+                        .ToList()
+                })
+                .ToList()
+        };
+    }
+
     public async Task<PagedResult<ReviewDto>> GetLocationReviewsAsync(Guid locationId, int page, int pageSize)
     {
         page = page < 1 ? 1 : page;
@@ -471,6 +532,89 @@ public class LocationRepository : ILocationRepository
                 .ThenByDescending(x => x.Id);
 
         var items = await sortedQuery
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(x => new AdminLocationDto
+            {
+                Id = x.Id,
+                OwnerId = x.OwnerId,
+                OwnerName = x.Owner != null ? (x.Owner.UserName ?? x.Owner.Email ?? UnknownUserName) : null,
+                LocationName = x.LocationName,
+                Description = x.Description,
+                Address = x.Address,
+                AddressLink = x.AddressLink,
+                MediaLinkUrls = _context.MediaLinks
+                    .Where(m => m.EntityType == LocationMediaEntityType && m.EntityId == x.Id)
+                    .OrderBy(m => m.SortOrder)
+                    .Select(m => m.Media.Url)
+                    .ToList(),
+                Type = x.Type,
+                OpeningHours = x.OpeningHours.HasValue ? x.OpeningHours.Value.ToString(@"hh\:mm\:ss") : null,
+                ClosingHours = x.ClosingHours.HasValue ? x.ClosingHours.Value.ToString(@"hh\:mm\:ss") : null,
+                Status = x.Status,
+                StatusName = x.Status == LocationStatuses.Pending
+                    ? "pending"
+                    : x.Status == LocationStatuses.Approved
+                        ? "approved"
+                        : x.Status == LocationStatuses.Rejected
+                            ? "rejected"
+                            : x.Status == LocationStatuses.Active
+                                ? "active"
+                                : "inactive",
+                PreviousStatus = x.PreviousStatus,
+                PreviousStatusName = x.PreviousStatus == null
+                    ? null
+                    : x.PreviousStatus == LocationStatuses.Pending
+                        ? "pending"
+                        : x.PreviousStatus == LocationStatuses.Approved
+                            ? "approved"
+                            : x.PreviousStatus == LocationStatuses.Rejected
+                                ? "rejected"
+                                : x.PreviousStatus == LocationStatuses.Active
+                                    ? "active"
+                                    : "inactive",
+                HasPendingUpdate = x.HasPendingUpdate,
+                PendingLocationName = x.PendingLocationName,
+                PendingDescription = x.PendingDescription,
+                PendingAddress = x.PendingAddress,
+                PendingAddressLink = x.PendingAddressLink,
+                PendingMediaLinkUrls = _context.MediaLinks
+                    .Where(m => m.EntityType == PendingLocationMediaEntityType && m.EntityId == x.Id)
+                    .OrderBy(m => m.SortOrder)
+                    .Select(m => m.Media.Url)
+                    .ToList(),
+                PendingType = x.PendingType,
+                PendingOpeningHours = x.PendingOpeningHours.HasValue ? x.PendingOpeningHours.Value.ToString(@"hh\:mm\:ss") : null,
+                PendingClosingHours = x.PendingClosingHours.HasValue ? x.PendingClosingHours.Value.ToString(@"hh\:mm\:ss") : null,
+                PendingUpdatedAt = x.PendingUpdatedAt
+            })
+            .ToListAsync();
+
+        return new PagedResult<AdminLocationDto>
+        {
+            Items = items,
+            MetaData = new MetaData
+            {
+                Page = page,
+                PageSize = pageSize,
+                Total = total,
+                TotalPage = total == 0 ? 0 : (int)Math.Ceiling(total / (double)pageSize)
+            }
+        };
+    }
+
+    public async Task<PagedResult<AdminLocationDto>> GetAdminLocationsByOwnerAsync(Guid ownerId, int page, int pageSize)
+    {
+        page = page < 1 ? 1 : page;
+        pageSize = pageSize < 1 ? 10 : pageSize;
+
+        IQueryable<Core.Models.Location> query = _context.Locations
+            .Include(x => x.Owner)
+            .Where(x => x.OwnerId == ownerId);
+
+        var total = await query.CountAsync();
+        var items = await query
+            .OrderByDescending(x => x.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Select(x => new AdminLocationDto
