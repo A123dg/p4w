@@ -120,7 +120,7 @@ public class LocationService : ILocationService
             return await GetAdminLocationDetailAsync(entity.Id);
         }
 
-        if (entity.Status == LocationStatuses.Inactive || entity.Status == LocationStatuses.Locked || entity.Status == LocationStatuses.Rejected)
+        if (entity.Status == LocationStatuses.Locked || entity.Status == LocationStatuses.Rejected)
         {
             throw new AppException(MessageConstant.LocationMessage.INACTIVE_LOCATION_CANNOT_BE_UPDATED, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
         }
