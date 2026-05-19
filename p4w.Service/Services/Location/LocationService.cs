@@ -105,7 +105,7 @@ public class LocationService : ILocationService
 
         if (request.Status == LocationStatuses.Inactive)
         {
-            entity.Status = LocationStatuses.Inactive;
+            UpdateLocationStatusWithHistory(entity, LocationStatuses.Inactive);
             ClearPendingUpdate(entity);
             await _locationRepository.UpdateLocationAsync(entity);
             await _locationRepository.ClearLocationMediaAsync(entity.Id, "location-pending");
@@ -387,7 +387,7 @@ public class LocationService : ILocationService
                     entity.OwnerId = request.OwnerId;
                 }
 
-                entity.Status = request.Status.Value;
+                UpdateLocationStatusWithHistory(entity, request.Status.Value);
 
                 ClearPendingUpdate(entity);
                 await _locationRepository.UpdateLocationAsync(entity);
@@ -405,7 +405,7 @@ public class LocationService : ILocationService
 
         if (request.Status.HasValue)
         {
-            entity.Status = request.Status.Value;
+            UpdateLocationStatusWithHistory(entity, request.Status.Value);
         }
 
         if (HasCoreLocationChanges(request))
@@ -429,7 +429,7 @@ public class LocationService : ILocationService
             throw new AppException(MessageConstant.LocationMessage.LOCATION_NOT_FOUND, ErrorCodes.NotFound, StatusCodes.Status404NotFound);
         }
 
-        entity.Status = LocationStatuses.Inactive;
+        UpdateLocationStatusWithHistory(entity, LocationStatuses.Inactive);
         await _locationRepository.UpdateLocationAsync(entity);
         return await GetAdminLocationDetailAsync(entity.Id);
     }
@@ -587,6 +587,17 @@ public class LocationService : ILocationService
         {
             entity.Type = request.Type.Value;
         }
+    }
+
+    private static void UpdateLocationStatusWithHistory(Core.Models.Location entity, int newStatus)
+    {
+        if (entity.Status == newStatus)
+        {
+            return;
+        }
+
+        entity.PreviousStatus = entity.Status;
+        entity.Status = newStatus;
     }
 
     private static void ClearPendingUpdate(Core.Models.Location entity)

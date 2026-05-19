@@ -15,6 +15,8 @@ public class AdminLocationDto
     public string? ClosingHours { get; set; }
     public int Status { get; set; }
     public string StatusName { get; set; } = null!;
+    public int? PreviousStatus { get; set; }
+    public string? PreviousStatusName { get; set; }
     public bool HasPendingUpdate { get; set; }
     public string? PendingLocationName { get; set; }
     public string? PendingDescription { get; set; }

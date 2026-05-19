@@ -500,6 +500,18 @@ public class LocationRepository : ILocationRepository
                             : x.Status == LocationStatuses.Active
                                 ? "active"
                                 : "inactive",
+                PreviousStatus = x.PreviousStatus,
+                PreviousStatusName = x.PreviousStatus == null
+                    ? null
+                    : x.PreviousStatus == LocationStatuses.Pending
+                        ? "pending"
+                        : x.PreviousStatus == LocationStatuses.Approved
+                            ? "approved"
+                            : x.PreviousStatus == LocationStatuses.Rejected
+                                ? "rejected"
+                                : x.PreviousStatus == LocationStatuses.Active
+                                    ? "active"
+                                    : "inactive",
                 HasPendingUpdate = x.HasPendingUpdate,
                 PendingLocationName = x.PendingLocationName,
                 PendingDescription = x.PendingDescription,
@@ -749,6 +761,18 @@ public class LocationRepository : ILocationRepository
                             : x.Status == LocationStatuses.Active
                                 ? "active"
                                 : "inactive",
+                PreviousStatus = x.PreviousStatus,
+                PreviousStatusName = x.PreviousStatus == null
+                    ? null
+                    : x.PreviousStatus == LocationStatuses.Pending
+                        ? "pending"
+                        : x.PreviousStatus == LocationStatuses.Approved
+                            ? "approved"
+                            : x.PreviousStatus == LocationStatuses.Rejected
+                                ? "rejected"
+                                : x.PreviousStatus == LocationStatuses.Active
+                                    ? "active"
+                                    : "inactive",
                 HasPendingUpdate = x.HasPendingUpdate,
                 PendingLocationName = x.PendingLocationName,
                 PendingDescription = x.PendingDescription,

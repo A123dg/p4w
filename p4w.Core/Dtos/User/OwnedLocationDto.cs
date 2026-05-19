@@ -9,4 +9,6 @@ public class OwnedLocationDto
     public List<string> MediaLinkUrls { get; set; } = [];
     public int Status { get; set; }
     public string StatusName { get; set; } = null!;
+    public int? PreviousStatus { get; set; }
+    public string? PreviousStatusName { get; set; }
 }
