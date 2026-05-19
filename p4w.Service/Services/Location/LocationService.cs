@@ -103,9 +103,12 @@ public class LocationService : ILocationService
             throw new AppException(MessageConstant.LocationMessage.LOCATION_UPDATE_ACCESS_DENIED, ErrorCodes.Forbidden, StatusCodes.Status403Forbidden);
         }
 
-        if (request.Status.HasValue && request.Status.Value != LocationStatuses.Inactive)
+        if (request.Status.HasValue)
         {
-            throw new AppException(MessageConstant.LocationMessage.LOCATION_STATUS_INVALID, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
+            if (request.Status is not (LocationStatuses.Inactive or LocationStatuses.Pending or LocationStatuses.Approved or LocationStatuses.Rejected or LocationStatuses.Active))
+            {
+                throw new AppException(MessageConstant.LocationMessage.LOCATION_STATUS_INVALID, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
+            }
         }
 
         if (request.Status == LocationStatuses.Inactive)
@@ -117,7 +120,7 @@ public class LocationService : ILocationService
             return await GetAdminLocationDetailAsync(entity.Id);
         }
 
-        if (entity.Status == LocationStatuses.Inactive)
+        if (entity.Status == LocationStatuses.Inactive || entity.Status == LocationStatuses.Locked || entity.Status == LocationStatuses.Rejected)
         {
             throw new AppException(MessageConstant.LocationMessage.INACTIVE_LOCATION_CANNOT_BE_UPDATED, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
         }
