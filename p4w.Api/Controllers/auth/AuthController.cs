@@ -304,7 +304,7 @@ public class AuthController : ControllerBase
 
     private string ResolveGoogleCallbackBaseUrl()
 {
-    return "https://p4w-production-2371.up.railway.app";
+    return "https://transit-circle-leather-lead.trycloudflare.com";
 }
 
     private string? ResolveGoogleRedirectUri(string? redirectUri, string? state = null)
