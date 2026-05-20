@@ -26,9 +26,12 @@ public class AdminDashboardController : ControllerBase
     /// Admin only endpoint returning counts and overview statistics used by admin dashboard.
     /// </remarks>
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<AdminDashboardDto>>> GetDashboard([FromQuery] string? period = null)
+    public async Task<ActionResult<ApiResponse<AdminDashboardDto>>> GetDashboard(
+        [FromQuery] string? period = null,
+        [FromQuery] int? month = null,
+        [FromQuery] int? year = null)
     {
-        var dashboard = await _adminDashboardService.GetDashboardAsync(period);
+        var dashboard = await _adminDashboardService.GetDashboardAsync(period, month, year);
         return Ok(new ApiResponse<AdminDashboardDto>
         {
             Code = 200,

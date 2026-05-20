@@ -4,6 +4,8 @@ public sealed class AdminDashboardDto
 {
     public int TotalUsers { get; set; }
     public string Period { get; set; } = DashboardPeriods.Month;
+    public int? Month { get; set; }
+    public int Year { get; set; }
     public DateTime RangeStartUtc { get; set; }
     public DateTime RangeEndUtc { get; set; }
     public DashboardRatioDto Locations { get; set; } = new();

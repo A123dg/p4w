@@ -15,10 +15,10 @@ public sealed class AdminDashboardRepository : IAdminDashboardRepository
         _context = context;
     }
 
-    public async Task<AdminDashboardDto> GetDashboardAsync(string? period)
+    public async Task<AdminDashboardDto> GetDashboardAsync(string? period, int? month, int? year)
     {
         var normalizedPeriod = NormalizePeriod(period);
-        var (rangeStartUtc, rangeEndUtc) = ResolveRange(normalizedPeriod);
+        var (rangeStartUtc, rangeEndUtc, resolvedMonth, resolvedYear) = ResolveRange(normalizedPeriod, month, year);
 
         var totalUsers = await _context.Users.CountAsync(x =>
             x.Status != UserStatuses.Inactive &&
@@ -47,6 +47,8 @@ public sealed class AdminDashboardRepository : IAdminDashboardRepository
         {
             TotalUsers = totalUsers,
             Period = normalizedPeriod,
+            Month = resolvedMonth,
+            Year = resolvedYear,
             RangeStartUtc = rangeStartUtc,
             RangeEndUtc = rangeEndUtc,
             Locations = BuildRatio(locationApprovedCount, locationPendingCount),
@@ -62,16 +64,48 @@ public sealed class AdminDashboardRepository : IAdminDashboardRepository
             : DashboardPeriods.Month;
     }
 
-    private static (DateTime RangeStartUtc, DateTime RangeEndUtc) ResolveRange(string period)
+    private static (DateTime RangeStartUtc, DateTime RangeEndUtc, int? Month, int Year) ResolveRange(
+        string period,
+        int? month,
+        int? year)
     {
         var now = DateTime.UtcNow;
+        var resolvedYear = ResolveYear(year, now.Year);
 
         return period switch
         {
-            DashboardPeriods.Week => (StartOfWeekUtc(now), StartOfWeekUtc(now).AddDays(7)),
-            DashboardPeriods.Year => (new DateTime(now.Year, 1, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(now.Year + 1, 1, 1, 0, 0, 0, DateTimeKind.Utc)),
-            _ => (new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(1))
+            DashboardPeriods.Week => BuildWeekRange(now),
+            DashboardPeriods.Year => BuildYearRange(resolvedYear),
+            _ => BuildMonthRange(ResolveMonth(month, now.Month), resolvedYear)
         };
+    }
+
+    private static (DateTime RangeStartUtc, DateTime RangeEndUtc, int? Month, int Year) BuildWeekRange(DateTime now)
+    {
+        var rangeStartUtc = StartOfWeekUtc(now);
+        return (rangeStartUtc, rangeStartUtc.AddDays(7), null, now.Year);
+    }
+
+    private static (DateTime RangeStartUtc, DateTime RangeEndUtc, int? Month, int Year) BuildMonthRange(int month, int year)
+    {
+        var rangeStartUtc = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
+        return (rangeStartUtc, rangeStartUtc.AddMonths(1), month, year);
+    }
+
+    private static (DateTime RangeStartUtc, DateTime RangeEndUtc, int? Month, int Year) BuildYearRange(int year)
+    {
+        var rangeStartUtc = new DateTime(year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        return (rangeStartUtc, rangeStartUtc.AddYears(1), null, year);
+    }
+
+    private static int ResolveMonth(int? month, int fallbackMonth)
+    {
+        return month is >= 1 and <= 12 ? month.Value : fallbackMonth;
+    }
+
+    private static int ResolveYear(int? year, int fallbackYear)
+    {
+        return year is >= 1 and <= 9999 ? year.Value : fallbackYear;
     }
 
     private static DateTime StartOfWeekUtc(DateTime value)

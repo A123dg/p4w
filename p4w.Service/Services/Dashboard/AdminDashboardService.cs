@@ -13,8 +13,8 @@ public sealed class AdminDashboardService : IAdminDashboardService
         _adminDashboardRepository = adminDashboardRepository;
     }
 
-    public Task<AdminDashboardDto> GetDashboardAsync(string? period)
+    public Task<AdminDashboardDto> GetDashboardAsync(string? period, int? month, int? year)
     {
-        return _adminDashboardRepository.GetDashboardAsync(period);
+        return _adminDashboardRepository.GetDashboardAsync(period, month, year);
     }
 }

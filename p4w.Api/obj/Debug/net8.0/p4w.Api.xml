@@ -28,7 +28,7 @@
             Admin only endpoint to soft-hide comment by commentId.
             </remarks>
         </member>
-        <member name="M:p4w.Api.Controllers.Admin.AdminDashboardController.GetDashboard(System.String)">
+        <member name="M:p4w.Api.Controllers.Admin.AdminDashboardController.GetDashboard(System.String,System.Nullable{System.Int32},System.Nullable{System.Int32})">
             <summary>
             Get aggregate dashboard metrics for admin.
             </summary>
@@ -195,6 +195,16 @@
             <remarks>
             Returns paged reviews for the selected location.
             </remarks>
+        </member>
+        <member name="M:p4w.Api.Controllers.Location.LocationController.GetOwnerLocationsIfOwner(System.Guid,System.Int32,System.Int32)">
+            <summary>
+            If the current user is the owner of the specified location, return all locations owned by that user including statuses.
+            </summary>
+        </member>
+        <member name="M:p4w.Api.Controllers.Location.LocationController.GetOwnerLocationDetail(System.Guid)">
+            <summary>
+            If the current user is the owner of the specified location, return the admin detail of that location (includes status).
+            </summary>
         </member>
         <member name="M:p4w.Api.Controllers.Location.LocationController.CreateLocation(p4w.Core.Dtos.Location.CreateLocationRequest)">
             <summary>
