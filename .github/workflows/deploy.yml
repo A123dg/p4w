@@ -16,7 +16,7 @@ jobs:
           username: ${{ secrets.LINODE_USER }}
           key: ${{ secrets.LINODE_SSH_KEY }}
           script: |
-            cd /app/p4w
+            cd p4w
             git fetch origin main
             git reset --hard origin/main
             docker compose down
