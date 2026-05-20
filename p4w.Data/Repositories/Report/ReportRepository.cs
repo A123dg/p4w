@@ -111,6 +111,49 @@ public class ReportRepository : IReportRepository
         };
     }
 
+    public async Task LockReportedContentIfThresholdReachedAsync(string targetType, string targetId, int approvedReportThreshold)
+    {
+        if (approvedReportThreshold < 1 || !Guid.TryParse(targetId, out var guidId))
+        {
+            return;
+        }
+
+        var normalizedTargetType = targetType.Trim().ToLower();
+        if (normalizedTargetType is not ("review" or "comment"))
+        {
+            return;
+        }
+
+        var approvedReportCount = await _context.Reports.CountAsync(x =>
+            x.TargetType == normalizedTargetType &&
+            x.TargetId == targetId &&
+            x.Status == ReportStatuses.Approved);
+
+        if (approvedReportCount < approvedReportThreshold)
+        {
+            return;
+        }
+
+        if (normalizedTargetType == "review")
+        {
+            var review = await _context.Reviews.FirstOrDefaultAsync(x => x.Id == guidId);
+            if (review != null && review.Status != ReviewStatuses.Inactive)
+            {
+                review.Status = ReviewStatuses.Inactive;
+                await _context.SaveChangesAsync();
+            }
+
+            return;
+        }
+
+        var comment = await _context.Comments.FirstOrDefaultAsync(x => x.Id == guidId);
+        if (comment != null && comment.Status != CommentStatuses.Inactive)
+        {
+            comment.Status = CommentStatuses.Inactive;
+            await _context.SaveChangesAsync();
+        }
+    }
+
     private static ReportDto MapToDto(Core.Models.Report report)
     {
         return new ReportDto

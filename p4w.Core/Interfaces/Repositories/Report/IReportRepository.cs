@@ -12,4 +12,5 @@ public interface IReportRepository
     Task<ReportDto?> GetReportDetailAsync(Guid reportId);
     Task UpdateAsync(Core.Models.Report report);
     Task<bool> TargetExistsAsync(string targetType, string targetId);
+    Task LockReportedContentIfThresholdReachedAsync(string targetType, string targetId, int approvedReportThreshold);
 }

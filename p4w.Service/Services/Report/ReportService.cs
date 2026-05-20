@@ -12,6 +12,7 @@ namespace p4w.Service.Services.Report;
 public class ReportService : IReportService
 {
     private static readonly string[] AllowedTargetTypes = ["user", "location", "review", "comment"];
+    private const int ApprovedReportLockThreshold = 5;
     private readonly IReportRepository _reportRepository;
 
     public ReportService(IReportRepository reportRepository)
@@ -89,6 +90,14 @@ public class ReportService : IReportService
 
         report.Status = request.Status;
         await _reportRepository.UpdateAsync(report);
+
+        if (request.Status == ReportStatuses.Approved)
+        {
+            await _reportRepository.LockReportedContentIfThresholdReachedAsync(
+                report.TargetType,
+                report.TargetId,
+                ApprovedReportLockThreshold);
+        }
 
         return await GetReportDetailAsync(report.Id);
     }
