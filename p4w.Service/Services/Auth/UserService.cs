@@ -212,9 +212,11 @@ public class UserService : IUserService
                                 ? "approved"
                                 : x.Status == LocationStatuses.Rejected
                                     ? "rejected"
-                                    : x.Status == LocationStatuses.Active
-                                        ? "active"
-                                        : "inactive"
+                                    : x.Status == LocationStatuses.Locked
+                                        ? "locked"
+                                        : x.Status == LocationStatuses.Active
+                                            ? "active"
+                                            : "inactive"
                     })
                     .ToList()
             };

@@ -323,7 +323,7 @@ public class LocationService : ILocationService
             throw new AppException(MessageConstant.LocationMessage.STATUS_REQUIRED, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
         }
 
-        if (request.Status is not (LocationStatuses.Inactive or LocationStatuses.Pending or LocationStatuses.Approved or LocationStatuses.Rejected or LocationStatuses.Active))
+        if (!IsValidAdminLocationStatus(request.Status.Value))
         {
             throw new AppException(MessageConstant.LocationMessage.LOCATION_STATUS_INVALID, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
         }
@@ -353,7 +353,7 @@ public class LocationService : ILocationService
     public async Task<AdminLocationDto> UpdateAdminLocationAsync(Guid locationId, AdminUpsertLocationRequest request)
     {
         if (request.Status.HasValue
-            && request.Status is not (LocationStatuses.Inactive or LocationStatuses.Pending or LocationStatuses.Approved or LocationStatuses.Rejected or LocationStatuses.Active))
+            && !IsValidAdminLocationStatus(request.Status.Value))
         {
             throw new AppException(MessageConstant.LocationMessage.LOCATION_STATUS_INVALID, ErrorCodes.BadRequest, StatusCodes.Status400BadRequest);
         }
@@ -624,6 +624,16 @@ public class LocationService : ILocationService
         entity.PendingClosingHours = null;
         entity.PendingType = null;
         entity.PendingUpdatedAt = null;
+    }
+
+    private static bool IsValidAdminLocationStatus(int status)
+    {
+        return status is LocationStatuses.Inactive
+            or LocationStatuses.Pending
+            or LocationStatuses.Approved
+            or LocationStatuses.Locked
+            or LocationStatuses.Active
+            or LocationStatuses.Rejected;
     }
 }
 

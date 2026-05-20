@@ -558,9 +558,11 @@ public class LocationRepository : ILocationRepository
                         ? "approved"
                         : x.Status == LocationStatuses.Rejected
                             ? "rejected"
-                            : x.Status == LocationStatuses.Active
-                                ? "active"
-                                : "inactive",
+                            : x.Status == LocationStatuses.Locked
+                                ? "locked"
+                                : x.Status == LocationStatuses.Active
+                                    ? "active"
+                                    : "inactive",
                 PreviousStatus = x.PreviousStatus,
                 PreviousStatusName = x.PreviousStatus == null
                     ? null
@@ -570,9 +572,11 @@ public class LocationRepository : ILocationRepository
                             ? "approved"
                             : x.PreviousStatus == LocationStatuses.Rejected
                                 ? "rejected"
-                                : x.PreviousStatus == LocationStatuses.Active
-                                    ? "active"
-                                    : "inactive",
+                                : x.PreviousStatus == LocationStatuses.Locked
+                                    ? "locked"
+                                    : x.PreviousStatus == LocationStatuses.Active
+                                        ? "active"
+                                        : "inactive",
                 HasPendingUpdate = x.HasPendingUpdate,
                 PendingLocationName = x.PendingLocationName,
                 PendingDescription = x.PendingDescription,
@@ -641,9 +645,11 @@ public class LocationRepository : ILocationRepository
                         ? "approved"
                         : x.Status == LocationStatuses.Rejected
                             ? "rejected"
-                            : x.Status == LocationStatuses.Active
-                                ? "active"
-                                : "inactive",
+                            : x.Status == LocationStatuses.Locked
+                                ? "locked"
+                                : x.Status == LocationStatuses.Active
+                                    ? "active"
+                                    : "inactive",
                 PreviousStatus = x.PreviousStatus,
                 PreviousStatusName = x.PreviousStatus == null
                     ? null
@@ -653,9 +659,11 @@ public class LocationRepository : ILocationRepository
                             ? "approved"
                             : x.PreviousStatus == LocationStatuses.Rejected
                                 ? "rejected"
-                                : x.PreviousStatus == LocationStatuses.Active
-                                    ? "active"
-                                    : "inactive",
+                                : x.PreviousStatus == LocationStatuses.Locked
+                                    ? "locked"
+                                    : x.PreviousStatus == LocationStatuses.Active
+                                        ? "active"
+                                        : "inactive",
                 HasPendingUpdate = x.HasPendingUpdate,
                 PendingLocationName = x.PendingLocationName,
                 PendingDescription = x.PendingDescription,
@@ -902,9 +910,11 @@ public class LocationRepository : ILocationRepository
                         ? "approved"
                         : x.Status == LocationStatuses.Rejected
                             ? "rejected"
-                            : x.Status == LocationStatuses.Active
-                                ? "active"
-                                : "inactive",
+                            : x.Status == LocationStatuses.Locked
+                                ? "locked"
+                                : x.Status == LocationStatuses.Active
+                                    ? "active"
+                                    : "inactive",
                 PreviousStatus = x.PreviousStatus,
                 PreviousStatusName = x.PreviousStatus == null
                     ? null
@@ -914,9 +924,11 @@ public class LocationRepository : ILocationRepository
                             ? "approved"
                             : x.PreviousStatus == LocationStatuses.Rejected
                                 ? "rejected"
-                                : x.PreviousStatus == LocationStatuses.Active
-                                    ? "active"
-                                    : "inactive",
+                                : x.PreviousStatus == LocationStatuses.Locked
+                                    ? "locked"
+                                    : x.PreviousStatus == LocationStatuses.Active
+                                        ? "active"
+                                        : "inactive",
                 HasPendingUpdate = x.HasPendingUpdate,
                 PendingLocationName = x.PendingLocationName,
                 PendingDescription = x.PendingDescription,

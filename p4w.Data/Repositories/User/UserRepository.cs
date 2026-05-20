@@ -192,9 +192,11 @@ public class UserRepository : IUserRepository {
                     ? "approved"
                     : location.Status == LocationStatuses.Rejected
                         ? "rejected"
-                        : location.Status == LocationStatuses.Active
-                            ? "active"
-                            : "inactive",
+                        : location.Status == LocationStatuses.Locked
+                            ? "locked"
+                            : location.Status == LocationStatuses.Active
+                                ? "active"
+                                : "inactive",
             PreviousStatus = location.PreviousStatus,
             PreviousStatusName = location.PreviousStatus == null
                 ? null
@@ -204,9 +206,11 @@ public class UserRepository : IUserRepository {
                         ? "approved"
                         : location.PreviousStatus == LocationStatuses.Rejected
                             ? "rejected"
-                            : location.PreviousStatus == LocationStatuses.Active
-                                ? "active"
-                                : "inactive"
+                            : location.PreviousStatus == LocationStatuses.Locked
+                                ? "locked"
+                                : location.PreviousStatus == LocationStatuses.Active
+                                    ? "active"
+                                    : "inactive"
         };
     }
 
@@ -233,9 +237,11 @@ public class UserRepository : IUserRepository {
                         ? "approved"
                         : x.Status == LocationStatuses.Rejected
                             ? "rejected"
-                            : x.Status == LocationStatuses.Active
-                                ? "active"
-                                : "inactive",
+                            : x.Status == LocationStatuses.Locked
+                                ? "locked"
+                                : x.Status == LocationStatuses.Active
+                                    ? "active"
+                                    : "inactive",
                 PreviousStatus = x.PreviousStatus,
                 PreviousStatusName = x.PreviousStatus == null
                     ? null
@@ -245,9 +251,11 @@ public class UserRepository : IUserRepository {
                             ? "approved"
                             : x.PreviousStatus == LocationStatuses.Rejected
                                 ? "rejected"
-                                : x.PreviousStatus == LocationStatuses.Active
-                                    ? "active"
-                                    : "inactive"
+                                : x.PreviousStatus == LocationStatuses.Locked
+                                    ? "locked"
+                                    : x.PreviousStatus == LocationStatuses.Active
+                                        ? "active"
+                                        : "inactive"
             })
             .ToListAsync();
     }
@@ -324,9 +332,11 @@ query = query.Where(x =>
                                 ? "approved"
                                 : l.Status == LocationStatuses.Rejected
                                     ? "rejected"
-                                    : l.Status == LocationStatuses.Active
-                                        ? "active"
-                                        : "inactive",
+                                    : l.Status == LocationStatuses.Locked
+                                        ? "locked"
+                                        : l.Status == LocationStatuses.Active
+                                            ? "active"
+                                            : "inactive",
                         PreviousStatus = l.PreviousStatus,
                         PreviousStatusName = l.PreviousStatus == null
                             ? null
@@ -336,9 +346,11 @@ query = query.Where(x =>
                                     ? "approved"
                                     : l.PreviousStatus == LocationStatuses.Rejected
                                         ? "rejected"
-                                        : l.PreviousStatus == LocationStatuses.Active
-                                            ? "active"
-                                            : "inactive"
+                                        : l.PreviousStatus == LocationStatuses.Locked
+                                            ? "locked"
+                                            : l.PreviousStatus == LocationStatuses.Active
+                                                ? "active"
+                                                : "inactive"
                     })
                     .ToList()
             })
