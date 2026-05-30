@@ -13,6 +13,8 @@ public class AdminLocationDto
     public int Type { get; set; }
     public string? OpeningHours { get; set; }
     public string? ClosingHours { get; set; }
+    public double AverageRating { get; set; }
+    public int ReviewCount { get; set; }
     public int Status { get; set; }
     public string StatusName { get; set; } = null!;
     public int? PreviousStatus { get; set; }

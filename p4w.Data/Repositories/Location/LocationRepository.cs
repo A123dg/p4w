@@ -551,6 +551,8 @@ public class LocationRepository : ILocationRepository
                 Type = x.Type,
                 OpeningHours = x.OpeningHours.HasValue ? x.OpeningHours.Value.ToString(@"hh\:mm\:ss") : null,
                 ClosingHours = x.ClosingHours.HasValue ? x.ClosingHours.Value.ToString(@"hh\:mm\:ss") : null,
+                AverageRating = x.Reviews.Where(r => r.Status == ReviewStatuses.Active).Any() ? Math.Round(x.Reviews.Where(r => r.Status == ReviewStatuses.Active).Average(r => r.Rating), 1) : 0,
+                ReviewCount = x.Reviews.Count(r => r.Status == ReviewStatuses.Active),
                 Status = x.Status,
                 StatusName = x.Status == LocationStatuses.Pending
                     ? "pending"
@@ -638,6 +640,8 @@ public class LocationRepository : ILocationRepository
                 Type = x.Type,
                 OpeningHours = x.OpeningHours.HasValue ? x.OpeningHours.Value.ToString(@"hh\:mm\:ss") : null,
                 ClosingHours = x.ClosingHours.HasValue ? x.ClosingHours.Value.ToString(@"hh\:mm\:ss") : null,
+                AverageRating = x.Reviews.Where(r => r.Status == ReviewStatuses.Active).Any() ? Math.Round(x.Reviews.Where(r => r.Status == ReviewStatuses.Active).Average(r => r.Rating), 1) : 0,
+                ReviewCount = x.Reviews.Count(r => r.Status == ReviewStatuses.Active),
                 Status = x.Status,
                 StatusName = x.Status == LocationStatuses.Pending
                     ? "pending"
@@ -903,6 +907,8 @@ public class LocationRepository : ILocationRepository
                 Type = x.Type,
                 OpeningHours = x.OpeningHours.HasValue ? x.OpeningHours.Value.ToString(@"hh\:mm\:ss") : null,
                 ClosingHours = x.ClosingHours.HasValue ? x.ClosingHours.Value.ToString(@"hh\:mm\:ss") : null,
+                AverageRating = x.Reviews.Where(r => r.Status == ReviewStatuses.Active).Any() ? Math.Round(x.Reviews.Where(r => r.Status == ReviewStatuses.Active).Average(r => r.Rating), 1) : 0,
+                ReviewCount = x.Reviews.Count(r => r.Status == ReviewStatuses.Active),
                 Status = x.Status,
                 StatusName = x.Status == LocationStatuses.Pending
                     ? "pending"
